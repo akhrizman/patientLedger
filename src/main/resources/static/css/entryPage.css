@@ -1,0 +1,54 @@
+/*
+Extra small devices (portrait phones, less than 576px)
+No media query since this is the default in Bootstrap because it is "mobile first"
+*/
+
+#gameSearchContainer, #purchaseSearchContainer {
+  font-size: 2rem !important;
+}
+
+#entrySelectionContainer {
+  width: 100% !important;
+  font-size: 2rem !important;
+}
+
+.fieldLabels {
+  font-size: 2rem;
+  width: 35%;
+  float: left;
+  text-align: right;
+  margin-right: 5px;
+}
+
+.fieldInputs {
+  width: 60%;
+  float: right;
+}
+
+select {
+  font-size: 2rem !important;
+  display: inline-block;
+}
+
+#entryDetails {
+  display: none;
+  width: 100%;
+}
+
+#initials,#age {
+    width: 30%;
+}
+
+input[type="checkbox"] {
+  width: 2.3rem !important;
+  height: 2.3rem !important;
+}
+
+#btnSubmitUpdates {
+  font-size: 30px;
+  width: 60% !important;
+  float: right !important;
+  background-color: red !important;
+  border-color: #024488 !important;
+  color: #fff !important;
+}
