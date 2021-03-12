@@ -16,20 +16,23 @@
 <body onload="populateEntrySelection()">
 
   <br>
-  <div class="container" id="entrySelectionContainer" onclick="" onchange="showPatientDetails();">
-    <select id="entryNames">
-      <option value = 0>Select Entry</option>
-    </select>
+  <div class="container" >
+
+    <div id="entrySelectionContainer" onchange="showPatientDetails();">
+      <select id="entryNames">
+        <option value = 0>Create New Entry</option>
+      </select>
+    </div>
 
     <div id="entryDetails">
       <br>
 
       <div>
         <label for="initials">Initials</label>
-        <input type="text" id="initials" name="initials">
+        <input type="text" id="initials" name="initials">&nbsp;&nbsp;
 
         <label for="age">Age</label>
-        <input type="select" id="age" name="age">
+        <input type="number" id="age" name="age">
       </div><br>
 
       <label class="fieldLabels" for="startDate">Start Date</label>
@@ -37,6 +40,17 @@
 
       <label class="fieldLabels" for="endDate">End Date</label>
       <input type="date" class="fieldInputs" id="endDate" name="endDate"><br><br>
+    </div><br>
+
+    <div id="billings">
+        <div id="newBilling_1">
+          <input type="radio" id="billingCategory_1" name="billingCategory" value="1">
+          <label for="billingCategory_1">Office</label>&nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="radio" id="billingCategory_2" name="billingCategory" value="2">
+          <label for="billingCategory_2">Hospital</label>&nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="radio" id="billingCategory_3" name="billingCategory" value="3">
+          <label for="billingCategory_3">Procedure</label>
+        </div>
     </div>
 
   </div>
@@ -46,6 +60,9 @@
 
 <script>
 function populateEntrySelection() {
+    document.getElementById("startDate").value = getTodaysDate();
+    document.getElementById("endDate").value = getTodaysDate();
+
     fetch('./entrySelection', {
         method: 'GET',
         headers: {'Content-type': 'application/json'}
@@ -64,42 +81,46 @@ function populateEntrySelection() {
 function showPatientDetails() {
     var entryId = document.getElementById("entryNames").value;
 
-    if (entryId == 0) {
-        hideAll();
-        return;
+    if (entryId != 0) {
+        showEntryDetailInputs(false);
+        fetch('./ledgerEntry/' + entryId, {
+            method: 'GET',
+            headers: {'Content-type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(dto => {
+            showEntryDetailInputs();
+
+            var initialsInput = document.getElementById("initials");
+            initialsInput.value = dto.ledgerEntry.initials;
+
+            var ageInput = document.getElementById("age");
+            ageInput.value = dto.ledgerEntry.age;
+
+            var startDateInput = document.getElementById("startDate");
+            startDateInput.value = dto.ledgerEntry.startDate;
+
+            var endDateInput = document.getElementById("endDate");
+            endDateInput.value = dto.ledgerEntry.endDate;
+        });
+    } else if (entryId == 0) {
+        showEntryDetailInputs(true);
+        document.getElementById("initials").value = "";
+        document.getElementById("age").value = "";
+        document.getElementById("startDate").value = getTodaysDate();
+        document.getElementById("endDate").value = getTodaysDate();
     }
-
-    fetch('./ledgerEntry/' + entryId, {
-        method: 'GET',
-        headers: {'Content-type': 'application/json'}
-    })
-    .then(response => response.json())
-    .then(dto => {
-        console.log(dto);
-        document.getElementById("entryDetails").style.display = "inline-block";
-
-        var initialsInput = document.getElementById("initials");
-        initialsInput.value = dto.ledgerEntry.initials;
-        initialsInput.disabled = true;
-
-        var ageInput = document.getElementById("age");
-        ageInput.value = dto.ledgerEntry.age;
-        ageInput.disabled = true;
-
-        var startDateInput = document.getElementById("startDate");
-        startDateInput.value = dto.ledgerEntry.startDate;
-        startDateInput.disabled = true;
-
-        var endDateInput = document.getElementById("endDate");
-        endDateInput.value = dto.ledgerEntry.endDate;
-        ageInput.disabled = true;
-    });
 }
-function hideAll() {
-    document.getElementById("initials").style.hidden = false;
-    document.getElementById("age").style.hidden = false;
-    document.getElementById("startDate").style.hidden = false;
-    document.getElementById("endDate").style.hidden = false;
-    document.getElementById("entryDetails").style.display = "none";
+function showEntryDetailInputs(show) {
+    document.getElementById("initials").disabled = !show;
+    document.getElementById("age").disabled = !show;
+    document.getElementById("startDate").disabled = !show;
+}
+function getTodaysDate() {
+    var now = new Date();
+    var day = ("0" + now.getDate()).slice(-2);
+    var month = ("0" + (now.getMonth() + 1)).slice(-2);
+    var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
+    return today;
 }
 </script>

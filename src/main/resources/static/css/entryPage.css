@@ -7,9 +7,21 @@ No media query since this is the default in Bootstrap because it is "mobile firs
   font-size: 2rem !important;
 }
 
-#entrySelectionContainer {
+#entrySelectionContainer,#entryDetails {
   width: 100% !important;
   font-size: 2rem !important;
+  background-color: darkseagreen;
+}
+
+div[id*='newBilling_'] {
+  font-size: 2rem !important;
+  background-color: yellow;
+  margin-bottom: 5px;
+  background-color: antiquewhite;
+}
+
+#entryNames {
+    width: 100%;
 }
 
 .fieldLabels {
@@ -31,7 +43,6 @@ select {
 }
 
 #entryDetails {
-  display: none;
   width: 100%;
 }
 
@@ -39,7 +50,7 @@ select {
     width: 30%;
 }
 
-input[type="checkbox"] {
+input[type="checkbox"],radio {
   width: 2.3rem !important;
   height: 2.3rem !important;
 }
