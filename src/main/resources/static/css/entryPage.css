@@ -2,6 +2,9 @@
 Extra small devices (portrait phones, less than 576px)
 No media query since this is the default in Bootstrap because it is "mobile first"
 */
+ul {
+  list-style-type: none;
+}
 
 #gameSearchContainer, #purchaseSearchContainer {
   font-size: 2rem !important;
@@ -13,11 +16,19 @@ No media query since this is the default in Bootstrap because it is "mobile firs
   background-color: darkseagreen;
 }
 
-div[id*='newBilling_'] {
+#newBillingTEMP {
+    display: none;
+}
+
+#newBilling {
   font-size: 2rem !important;
-  background-color: yellow;
-  margin-bottom: 5px;
   background-color: antiquewhite;
+}
+
+div[id*='billing_'] {
+  font-size: 2rem !important;
+  background-color: gainsboro;
+  margin-bottom: 5px;
 }
 
 #entryNames {
@@ -55,6 +66,13 @@ input[type="checkbox"],radio {
   height: 2.3rem !important;
 }
 
+#btnBillingDateToday {
+  font-size: 2.3rem;
+  width: 20% !important;
+  background-color: darkseagreen !important;
+  border-color: darkseagreen;
+  color: #fff !important;
+}
 #btnSubmitUpdates {
   font-size: 30px;
   width: 60% !important;

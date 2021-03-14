@@ -23,8 +23,13 @@ public class DataController {
     }
 
     @GetMapping("/ledgerEntry/{id}")
-    public LedgerEntryDto getEntry(@PathVariable int id) {
-        System.out.println(dataService.getLedgerEntry(id));
-        return dataService.getLedgerEntry(id);
+    public LedgerEntryDto getEntry(@PathVariable int id) { return dataService.getLedgerEntry(id); }
+
+    @GetMapping("/billings/{entryId}")
+    public LedgerEntryDto getBillings(@PathVariable int entryId) {
+        return dataService.getBillings(entryId);
     }
+
+    @GetMapping("/billingOptions")
+    public LedgerEntryDto getBillingOptions() { return dataService.getBillingOptions(); }
 }

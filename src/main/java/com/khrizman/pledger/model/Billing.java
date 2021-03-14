@@ -20,7 +20,7 @@ public class Billing implements Serializable {
     @Id
     private int id;
 
-    private int ledger_entry_id;
+    private int ledgerEntryId;
     private int billingTypeId;
     private int categoryId;
     private boolean billed;
