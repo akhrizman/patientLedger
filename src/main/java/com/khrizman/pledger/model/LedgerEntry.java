@@ -17,7 +17,7 @@ public class LedgerEntry implements Serializable {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Getter @Setter(AccessLevel.NONE) private String initials;
 

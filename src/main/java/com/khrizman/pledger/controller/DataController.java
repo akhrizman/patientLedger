@@ -3,6 +3,7 @@ package com.khrizman.pledger.controller;
 import com.khrizman.pledger.dto.LedgerEntryDetailsDto;
 import com.khrizman.pledger.dto.BillingDto;
 import com.khrizman.pledger.dto.NewLedgerEntryDto;
+import com.khrizman.pledger.model.Billing;
 import com.khrizman.pledger.model.LedgerEntry;
 import com.khrizman.pledger.service.DataService;
 import com.khrizman.pledger.util.Utilities;
@@ -25,10 +26,10 @@ public class DataController {
     }
 
     @GetMapping("/ledgerEntry/{id}")
-    public LedgerEntryDetailsDto getEntry(@PathVariable int id) { return dataService.getLedgerEntry(id); }
+    public LedgerEntryDetailsDto getEntry(@PathVariable long id) { return dataService.getLedgerEntry(id); }
 
     @GetMapping("/billings/{entryId}")
-    public LedgerEntryDetailsDto getBillings(@PathVariable int entryId) {
+    public LedgerEntryDetailsDto getBillings(@PathVariable long entryId) {
         return dataService.getBillings(entryId);
     }
 
@@ -49,13 +50,13 @@ public class DataController {
 
     @PutMapping("/billing")
     @ResponseBody
-    public BillingDto updateBilling(@RequestBody BillingDto billingDto) {
+    public Billing updateBilling(@RequestBody BillingDto billingDto) {
         return dataService.updateBilling(billingDto);
     }
 
     @PatchMapping("/ledgerEntry/{id}")
     @ResponseBody
-    public LedgerEntry completeLedgerEntry(@PathVariable int id) {
+    public LedgerEntry completeLedgerEntry(@PathVariable long id) {
         return dataService.completeLedgerEntry(id);
     }
 }

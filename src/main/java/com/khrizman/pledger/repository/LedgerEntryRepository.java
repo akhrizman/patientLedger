@@ -8,5 +8,5 @@ import java.util.List;
 public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, Long> {
     List<LedgerEntry> findAllByEntryCompleteOrderByStartDate(boolean complete);
 
-    LedgerEntry findById(int id);
+    LedgerEntry findById(long id);
 }

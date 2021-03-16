@@ -19,9 +19,9 @@ public class Billing implements Serializable {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
-    private int ledgerEntryId;
+    private long ledgerEntryId;
     private int billingTypeId;
     private int categoryId;
     private boolean billed;

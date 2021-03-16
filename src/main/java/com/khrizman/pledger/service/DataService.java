@@ -46,11 +46,11 @@ public class DataService {
         return entriesForSelection;
     }
 
-    public LedgerEntryDetailsDto getLedgerEntry(int id) {
+    public LedgerEntryDetailsDto getLedgerEntry(long id) {
         return new LedgerEntryDetailsDto(ledgerEntryRepository.findById(id));
     }
 
-    public LedgerEntryDetailsDto getBillings(int ledgerEntryId) {
+    public LedgerEntryDetailsDto getBillings(long ledgerEntryId) {
         return new LedgerEntryDetailsDto(
                 billingRepository.findAllByLedgerEntryIdOrderByServiceDate(ledgerEntryId),
                 getCategoryMap(),
@@ -82,7 +82,7 @@ public class DataService {
     @Transactional
     public LedgerEntryDetailsDto createLedgerEntry(NewLedgerEntryDto newLedgerEntryDto) {
         return new LedgerEntryDetailsDto(ledgerEntryRepository.save(LedgerEntry.builder()
-                .initials(newLedgerEntryDto.getInitials())
+                .initials(newLedgerEntryDto.getInitials().toUpperCase())
                 .age(newLedgerEntryDto.getAge())
                 .startDate(newLedgerEntryDto.getStartDate())
                 .entryComplete(newLedgerEntryDto.isEntryComplete())
@@ -105,14 +105,25 @@ public class DataService {
                 getBillingTypeMap());
     }
 
-    public BillingDto updateBilling(BillingDto billingDto) {
-        //TODO: Use BillingRepository to update booleans
-        return null;
+    @Transactional
+    public Billing updateBilling(BillingDto billingDto) {
+        Billing billing = billingRepository.findById(billingDto.getId());
+        billing.setBilled(billingDto.isBilled());
+        billing.setReportComplete(billingDto.isReportComplete());
+        return billingRepository.save(billing);
     }
 
-    public LedgerEntry completeLedgerEntry(int id) {
-        //TODO: Check if all associated billings booleans are true,
-        // all data is complete and update status of entry.
-        return null;
+    @Transactional
+    public LedgerEntry completeLedgerEntry(long id) {
+        int existingBillings = billingRepository.countByLedgerEntryId(id);
+        int completedBillings = billingRepository.findByLedgerEntryIdAndBilledTrueAndReportCompleteTrue(id).size();
+        boolean billingsExist = existingBillings > 0;
+        boolean allBillingsComplete = existingBillings == completedBillings;
+        LedgerEntry ledgerEntry = ledgerEntryRepository.findById(id);
+        if (billingsExist && allBillingsComplete) {
+            ledgerEntry.setEntryComplete(true);
+            return ledgerEntryRepository.save(ledgerEntry);
+        }
+        return new LedgerEntry();
     }
 }

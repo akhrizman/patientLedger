@@ -292,18 +292,19 @@ function saveLedgerEntry() {
         var billedCheckbox = document.getElementById("billed_"+billingId);
         var reportCompletedCheckbox = document.getElementById("reportComplete_"+billingId);
 
-        billingDto = {id: billingId, billed: billedCheckbox.checked, reportCompleted: reportCompletedCheckbox.checked};
+        billingDto = {id: billingId, billed: billedCheckbox.checked, reportComplete: reportCompletedCheckbox.checked};
 
         fetch("./billing", {
             method: "PUT",
+            body: JSON.stringify(billingDto),
             headers: {'Content-type': 'application/json'}
             })
         .then(response => response.json())
-        .then(billingDto => {
-            if (billingDto.billed) {
+        .then(billing => {
+            if (billing.billed) {
                 billedCheckbox.disabled = true;
             }
-            if (billingDto.reportComplete) {
+            if (billing.reportComplete) {
                 reportCompletedCheckbox.disabled = true;
             }
         });
@@ -346,7 +347,6 @@ function saveLedgerEntry() {
         .then((newLedgerEntryDetailsDto) => {
             // DO A BUNCH OF STUFF
             var newLedgerEntryId = newLedgerEntryDetailsDto.ledgerEntry.id;
-            console.log(newLedgerEntryDetailsDto);
             if (!newLedgerEntryId) {
                 alert("New Entry could not be Created.");
                 return;
@@ -441,19 +441,22 @@ function getNewBillingDto() {
 function finalizeLedgerEntry() {
     // POSSIBLE RACE CONDITION
     // check if all billings are both billed and reportComplete
-    alert("Button Not Functional");
     saveLedgerEntry();
     var ledgerEntryId = document.getElementById("entryNames").value;
 
     //Check if all boxes are checked in the billings checkboxes, if yes, then fetch PATCH the update
 
-    fetch("./completeLedgerEntry/"+ledgerEntryId, {
+    fetch("./ledgerEntry/"+ledgerEntryId, {
         method: "PATCH",
         headers: {'Content-type': 'application/json'}
         })
     .then(response => response.json())
-    .then(success => {
-        window.location.reload(true);
+    .then(ledgerEntry => {
+        if (ledgerEntry && ledgerEntry.entryComplete) {
+            window.location.reload(true);
+        } else {
+            alert("Could not Complete Entry. Add a billing or make sure all billings are complete.");
+        }
     });
 
 }

@@ -10,8 +10,8 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 public class BillingDto implements Serializable {
-    private int id;
-    private int ledgerEntryId;
+    private long id;
+    private long ledgerEntryId;
     private int categoryId;
     private int billingTypeId;
     private Date serviceDate;
