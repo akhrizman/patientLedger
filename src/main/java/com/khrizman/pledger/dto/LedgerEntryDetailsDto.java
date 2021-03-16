@@ -6,12 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
 @Data
 @NoArgsConstructor
-public class LedgerEntryDto implements Serializable {
+public class LedgerEntryDetailsDto implements Serializable {
     private LedgerEntry ledgerEntry;
     private String name;
     private List<Billing> billings;
@@ -19,27 +20,30 @@ public class LedgerEntryDto implements Serializable {
     private Map<Integer,String> billingTypeMap;
     private Map<Integer,List<Integer>> categoryToBillingTypesMap;
 
-    public LedgerEntryDto(LedgerEntry ledgerEntry) {
+    public LedgerEntryDetailsDto(LedgerEntry ledgerEntry) {
         this.ledgerEntry = ledgerEntry;
         this.name = getNameForSelection();
     }
 
-    public LedgerEntryDto(Map<Integer,String> categoryMap,
-                          Map<Integer,String> billingTypeMap,
-                          Map<Integer,List<Integer>> categoryToBillingTypeMap) {
+    public LedgerEntryDetailsDto(Map<Integer,String> categoryMap,
+                                 Map<Integer,String> billingTypeMap,
+                                 Map<Integer,List<Integer>> categoryToBillingTypeMap) {
         this.categoryMap = categoryMap;
         this.billingTypeMap = billingTypeMap;
         this.categoryToBillingTypesMap = categoryToBillingTypeMap;
     }
 
-    public LedgerEntryDto(List<Billing> billings, Map<Integer,String> categoryMap, Map<Integer,String> billingTypeMap) {
+    public LedgerEntryDetailsDto(List<Billing> billings,
+                                 Map<Integer,String> categoryMap,
+                                 Map<Integer,String> billingTypeMap) {
         this.billings = billings;
         this.categoryMap = categoryMap;
         this.billingTypeMap = billingTypeMap;
     }
 
     private String getNameForSelection() {
-        return ledgerEntry.getInitials() + "-" + ledgerEntry.getAge() + " ("+ ledgerEntry.getStartDate() + ")";
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM. dd");
+        return "(" + sdf.format(ledgerEntry.getStartDate()) + ") " + ledgerEntry.getInitials() + "-" + ledgerEntry.getAge();
     }
 
 

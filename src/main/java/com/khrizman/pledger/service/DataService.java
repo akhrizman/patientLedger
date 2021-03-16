@@ -1,11 +1,15 @@
 package com.khrizman.pledger.service;
 
-import com.khrizman.pledger.dto.LedgerEntryDto;
+import com.khrizman.pledger.dto.LedgerEntryDetailsDto;
+import com.khrizman.pledger.dto.BillingDto;
+import com.khrizman.pledger.dto.NewLedgerEntryDto;
 import com.khrizman.pledger.model.*;
 import com.khrizman.pledger.repository.*;
+import com.khrizman.pledger.util.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,19 +40,19 @@ public class DataService {
         return ledgerEntryRepository.findAllByEntryCompleteOrderByStartDate(true);
     }
 
-    public List<LedgerEntryDto> getEntriesForSelection() {
-        List<LedgerEntryDto> entriesForSelection = new ArrayList<LedgerEntryDto>();
-        getIncompleteLedgerEntries().stream().forEach(entry->entriesForSelection.add(new LedgerEntryDto(entry)));
+    public List<LedgerEntryDetailsDto> getEntriesForSelection() {
+        List<LedgerEntryDetailsDto> entriesForSelection = new ArrayList<LedgerEntryDetailsDto>();
+        getIncompleteLedgerEntries().stream().forEach(entry->entriesForSelection.add(new LedgerEntryDetailsDto(entry)));
         return entriesForSelection;
     }
 
-    public LedgerEntryDto getLedgerEntry(int id) {
-        return new LedgerEntryDto(ledgerEntryRepository.findById(id));
+    public LedgerEntryDetailsDto getLedgerEntry(int id) {
+        return new LedgerEntryDetailsDto(ledgerEntryRepository.findById(id));
     }
 
-    public LedgerEntryDto getBillings(int entryId) {
-        return new LedgerEntryDto(
-                billingRepository.findAllByLedgerEntryIdOrderByServiceDate(entryId),
+    public LedgerEntryDetailsDto getBillings(int ledgerEntryId) {
+        return new LedgerEntryDetailsDto(
+                billingRepository.findAllByLedgerEntryIdOrderByServiceDate(ledgerEntryId),
                 getCategoryMap(),
                 getBillingTypeMap());
     }
@@ -71,7 +75,33 @@ public class DataService {
                         Collectors.mapping(CategoryBillingType::getBillingTypeId, Collectors.toList())));
     }
 
-    public LedgerEntryDto getBillingOptions() {
-        return new LedgerEntryDto(getCategoryMap(), getBillingTypeMap(), getCategoryToBillingTypesMap());
+    public LedgerEntryDetailsDto getBillingOptions() {
+        return new LedgerEntryDetailsDto(getCategoryMap(), getBillingTypeMap(), getCategoryToBillingTypesMap());
+    }
+
+    @Transactional
+    public LedgerEntryDetailsDto createLedgerEntry(NewLedgerEntryDto newLedgerEntryDto) {
+        return new LedgerEntryDetailsDto(ledgerEntryRepository.save(LedgerEntry.builder()
+                .initials(newLedgerEntryDto.getInitials())
+                .age(newLedgerEntryDto.getAge())
+                .startDate(newLedgerEntryDto.getStartDate())
+                .entryComplete(newLedgerEntryDto.isEntryComplete())
+                .build()));
+    }
+
+    @Transactional
+    public LedgerEntryDetailsDto createBilling(BillingDto billingDto) {
+        List<Billing> billing = new ArrayList<>();
+        billing.add(billingRepository.save(Billing.builder()
+                .ledgerEntryId(billingDto.getLedgerEntryId())
+                .categoryId(billingDto.getCategoryId())
+                .billingTypeId(billingDto.getBillingTypeId())
+                .serviceDate(billingDto.getServiceDate())
+                .billed(billingDto.isBilled())
+                .reportComplete(billingDto.isReportComplete())
+                .build()));
+        return new LedgerEntryDetailsDto(billing,
+                getCategoryMap(),
+                getBillingTypeMap());
     }
 }

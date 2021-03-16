@@ -38,25 +38,28 @@
       <label class="fieldLabels" for="startDate">Start Date</label>
       <input type="date" class="fieldInputs" id="startDate" name="startDate"><br><br>
 
-      <label class="fieldLabels" for="endDate">End Date</label>
-      <input type="date" class="fieldInputs" id="endDate" name="endDate"><br><br>
     </div><br>
 
     <div id="newBilling">
         <div id="newBillingDynamic"></div>
 
         <div id="newBillingStaticInput">
-          <label class="fieldLabels" for="newBillingDate">Billing Date</label>
-          <input type="date" class="fieldInputs" id="newBillingDate" name="newBillingDate"><br><br>
+          <label class="fieldLabels" for="newServiceDate">Bill Date</label>
+          <input type="date" class="fieldInputs" id="newServiceDate" name="newServiceDate"><br><br>
           <input type="checkbox" id="newBilledCheckbox" name="newBilledCheckbox">
           <label for="newBilledCheckbox">&nbsp;Billed&nbsp;&nbsp;&nbsp;&nbsp;</label>
 
           <input type="checkbox" id="newReportCompleteCheckbox" name="newReportCompleteCheckbox">
-          <label for="newReportCompleteCheckbox">&nbsp;Report Complete</label>
+          <label for="newReportCompleteCheckbox">&nbsp;Reported</label>
         </div>
     </div>
 
     <div id="billings"></div>
+
+    <div id="updateEntries">
+      <button class="btn btn-primary" id="btnComplete" type="button" onclick="finalizeLedgerEntry();">COMPLETED</button>
+      <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry()">SAVE</button>
+    </div>
 
   </div>
 
@@ -66,8 +69,7 @@
 <script>
 function populateEntrySelection() {
     document.getElementById("startDate").value = getTodaysDate();
-    document.getElementById("endDate").value = getTodaysDate();
-
+    setNewServiceDateToToday();
     fetch('./entrySelection', {
         method: 'GET',
         headers: {'Content-type': 'application/json'}
@@ -79,9 +81,11 @@ function populateEntrySelection() {
             var entryOption = document.createElement("option");
             entryOption.value = entries[i].ledgerEntry.id;
             entryOption.innerHTML = entries[i].name;
+            console.log(entries[i]);
             entryDropdown.appendChild(entryOption);
         }
     });
+    showPatientDetails();
 }
 function showPatientDetails() {
     var entryId = document.getElementById("entryNames").value;
@@ -105,70 +109,23 @@ function showPatientDetails() {
             var startDateInput = document.getElementById("startDate");
             startDateInput.value = dto.ledgerEntry.startDate;
 
-            var endDateInput = document.getElementById("endDate");
-            endDateInput.value = dto.ledgerEntry.endDate;
-            populateBillings(entryId);
+            getAndPopulateBillings(entryId);
         });
-    } else if (entryId == 0) {
+    } else {
         showEntryDetailInputs(true);
         document.getElementById("initials").value = "";
         document.getElementById("age").value = "";
         document.getElementById("startDate").value = getTodaysDate();
-        document.getElementById("endDate").value = getTodaysDate();
     }
 }
-function populateBillings(entryId) {
-    // fetch all billings for this entry
-    // for loop to load each billing into its own div
-    // create checkboxes that can only be checked IF not loaded as checked.
+function getAndPopulateBillings(entryId) {
     fetch('./billings/' + entryId, {
         method: 'GET',
         headers: {'Content-type': 'application/json'}
     })
     .then(response => response.json())
     .then(dto => {
-        var billingsDiv = document.getElementById("billings");
-        for (i in dto.billings) {
-            var billingDiv = document.createElement("div");
-            billingDiv.id = "billing_" + dto.billings[i].id;
-
-            var billingCategoryAndType = document.createElement("h3");
-            billingCategoryAndType.innerHTML = dto.categoryMap[dto.billings[i].categoryId] + ": " + dto.billingTypeMap[dto.billings[i].billingTypeId];
-            billingDiv.appendChild(billingCategoryAndType);
-
-            var billingDate = document.createElement("p");
-            billingDate.innerHTML = dto.billings[i].serviceDate;
-            billingDiv.appendChild(billingDate);
-
-            var checkboxesDiv = document.createElement("div");
-            checkboxesDiv.id = "checkboxes_" + dto.billings[i].id;
-
-            var billedInput = document.createElement("input");
-            billedInput.type = "checkbox";
-            billedInput.id = "billed_" + dto.billings[i].id;
-            billedInput.name = "billed_" + dto.billings[i].id;
-            billedInput.disabled = (dto.billings[i].billed);
-            checkboxesDiv.appendChild(billedInput);
-            var billedLabel = document.createElement("label");
-            billedLabel.htmlFor = "billed_" + dto.billings[i].id;
-            billedLabel.innerHTML = "&nbsp;Billed&nbsp;&nbsp;&nbsp;&nbsp;";
-            checkboxesDiv.appendChild(billedLabel);
-
-            var completedInput = document.createElement("input");
-            completedInput.type = "checkbox";
-            completedInput.id = "reportComplete_" + dto.billings[i].id;
-            completedInput.name = "reportComplete_" + dto.billings[i].id;
-            completedInput.disabled = (dto.billings[i].reportComplete);
-            checkboxesDiv.appendChild(completedInput);
-            var completedLabel = document.createElement("label");
-            completedLabel.htmlFor = "reportComplete_" + dto.billings[i].id;
-            completedLabel.innerHTML = "&nbsp;Report Complete";
-            checkboxesDiv.appendChild(completedLabel);
-
-            billingDiv.appendChild(checkboxesDiv);
-
-            billingsDiv.appendChild(billingDiv);
-        }
+        populateExistingBillings(dto);
     });
 }
 function createNewBillingForm() {
@@ -231,6 +188,52 @@ function createNewBillingForm() {
         newBillingDiv.appendChild(categoryList);
     });
 }
+function populateExistingBillings(dto) {
+    var billingsDiv = document.getElementById("billings");
+    for (i in dto.billings) {
+        var billingDiv = document.createElement("div");
+        billingDiv.id = "billing_" + dto.billings[i].id;
+
+        var billingCategoryAndType = document.createElement("h3");
+        billingCategoryAndType.innerHTML = dto.categoryMap[dto.billings[i].categoryId] + ": " + dto.billingTypeMap[dto.billings[i].billingTypeId];
+        billingDiv.appendChild(billingCategoryAndType);
+
+        var serviceDate = document.createElement("p");
+        serviceDate.innerHTML = dto.billings[i].serviceDate;
+        billingDiv.appendChild(serviceDate);
+
+        var checkboxesDiv = document.createElement("div");
+        checkboxesDiv.id = "checkboxes_" + dto.billings[i].id;
+
+        var billedInput = document.createElement("input");
+        billedInput.type = "checkbox";
+        billedInput.id = "billed_" + dto.billings[i].id;
+        billedInput.name = "billed_" + dto.billings[i].id;
+        billedInput.checked = (dto.billings[i].billed);
+        billedInput.disabled = (dto.billings[i].billed);
+        checkboxesDiv.appendChild(billedInput);
+        var billedLabel = document.createElement("label");
+        billedLabel.htmlFor = "billed_" + dto.billings[i].id;
+        billedLabel.innerHTML = "&nbsp;Billed&nbsp;&nbsp;&nbsp;&nbsp;";
+        checkboxesDiv.appendChild(billedLabel);
+
+        var completedInput = document.createElement("input");
+        completedInput.type = "checkbox";
+        completedInput.id = "reportComplete_" + dto.billings[i].id;
+        completedInput.name = "reportComplete_" + dto.billings[i].id;
+        completedInput.checked = (dto.billings[i].reportComplete);
+        completedInput.disabled = (dto.billings[i].reportComplete);
+        checkboxesDiv.appendChild(completedInput);
+        var completedLabel = document.createElement("label");
+        completedLabel.htmlFor = "reportComplete_" + dto.billings[i].id;
+        completedLabel.innerHTML = "&nbsp;Report Complete";
+        checkboxesDiv.appendChild(completedLabel);
+
+        billingDiv.appendChild(checkboxesDiv);
+
+        billingsDiv.appendChild(billingDiv);
+    }
+}
 function showEntryDetailInputs(show) {
     document.getElementById("initials").disabled = !show;
     document.getElementById("age").disabled = !show;
@@ -264,12 +267,12 @@ function uncheckAllCategorySelections() {
 function resetNewBillingForm() {
     uncheckAllCategorySelections();
     hideAllBillingTypeLists();
-    document.getElementById("newBillingDate").value = '';
+    setNewServiceDateToToday();
     document.getElementById("newBilledCheckbox").checked = false;
     document.getElementById("newReportCompleteCheckbox").checked = false;
 }
-function setNewBillingDateToToday() {
-    document.getElementById("newBillingDate").value = getTodaysDate();
+function setNewServiceDateToToday() {
+    document.getElementById("newServiceDate").value = getTodaysDate();
 }
 function getTodaysDate() {
     var now = new Date();
@@ -277,5 +280,127 @@ function getTodaysDate() {
     var month = ("0" + (now.getMonth() + 1)).slice(-2);
     var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
     return today;
+}
+function finalizeLedgerEntry() {
+    alert("Button Not Functional");
+}
+function saveLedgerEntry() {
+    var ledgerEntryId = document.getElementById("entryNames").value;
+
+    if (ledgerEntryId == 0) {
+        initials = document.getElementById("initials").value;
+        if (!initials) {
+            alert("Missing Initials");
+            return;
+        }
+        age = document.getElementById("age").value;
+        if (!age) {
+            alert("Missing Age");
+            return;
+        }
+        startDate = document.getElementById("startDate").value;
+        if (!startDate) {
+            alert("Missing Start Date");
+            return;
+        }
+
+        var newLedgerEntryDto = {
+            initials: initials,
+            age: age,
+            startDate: startDate,
+            entryComplete: false
+        };
+
+
+        fetch("./ledgerEntry", {
+            method: "POST",
+            body: JSON.stringify(newLedgerEntryDto),
+            headers: {'Content-type': 'application/json'}
+            })
+        .then((response) => response.json())
+        .then((newLedgerEntryDetailsDto) => {
+            // DO A BUNCH OF STUFF
+            var newLedgerEntryId = newLedgerEntryDetailsDto.ledgerEntry.id;
+            console.log(newLedgerEntryDetailsDto);
+            if (!newLedgerEntryId) {
+                alert("New Entry could not be Created.");
+                return;
+            } else {
+                var entryDropdown = document.getElementById("entryNames");
+                var newEntryOption = document.createElement("option");
+                newEntryOption.value = newLedgerEntryId;
+                newEntryOption.innerHTML = newLedgerEntryDetailsDto.name;
+                newEntryOption.selected = true;
+                entryDropdown.appendChild(newEntryOption);
+                showEntryDetailInputs(false);
+            }
+            var newBillingDto = getNewBillingDto();
+            if (newLedgerEntryId && newBillingDto != null) {
+                console.log("New Ledger Entry Created: " + newLedgerEntryId);
+                createAndPopulateNewBilling(newBillingDto, newLedgerEntryId);
+            }
+            hideAllBillingTypeLists();
+            uncheckAllCategorySelections();
+        });
+    } else {
+        // Ledger Entry exists already, but need to collect changes to other billings
+        var newBillingDto = getNewBillingDto();
+        if (newBillingDto != null) {
+            createAndPopulateNewBilling(newBillingDto, ledgerEntryId);
+        }
+    }
+}
+function createAndPopulateNewBilling(newBillingDto, ledgerEntryId) {
+    newBillingDto.ledgerEntryId = ledgerEntryId;
+    fetch("./billing", {
+        method: "POST",
+        body: JSON.stringify(newBillingDto),
+        headers: {'Content-type': 'application/json'}
+        })
+    .then(response => response.json())
+    .then(newLedgerEntryDetailsDto => {
+        if (!newLedgerEntryDetailsDto.billings) {
+            alert("New Billing could not be Created.");
+            return;
+        } else {
+            populateExistingBillings(newLedgerEntryDetailsDto);
+            console.log("New Billing Created: " + newLedgerEntryDetailsDto.billings[0].id);
+        }
+    });
+}
+function getNewBillingDto() {
+    var ledgerEntryId = document.getElementById("entryNames").value;
+
+    var selectedCategory = document.querySelector('input[name="newCategorySelection"]:checked');
+    if (selectedCategory == null) {
+        alert("Missing Category");
+        return null;
+    } else {
+        var categoryId = selectedCategory.value ;
+    }
+
+    var selectedBillingType = document.querySelector('input[name="newBillingTypeSelection"]:checked');
+    if (selectedBillingType == null) {
+        alert("Missing Billing Type");
+        return null;
+    } else {
+        var billingTypeId = selectedBillingType.value;
+    }
+
+    var newServiceDate = document.getElementById("newServiceDate");
+    if (newServiceDate) {
+        return {
+            id: 0,
+            ledgerEntryId: ledgerEntryId,
+            categoryId: categoryId,
+            billingTypeId: billingTypeId,
+            newServiceDate: newServiceDate,
+            billed: document.getElementById("newBilledCheckbox").checked,
+            reportComplete: document.getElementById("newReportCompleteCheckbox").checked
+        };
+    } else {
+        alert("Missing Service Date");
+        return null;
+    }
 }
 </script>

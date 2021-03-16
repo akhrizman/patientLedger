@@ -16,11 +16,7 @@ ul {
   background-color: darkseagreen;
 }
 
-#newBillingTEMP {
-    display: none;
-}
-
-#newBilling {
+#newBilling,#newBillingDynamic,#newBillingStaticInput {
   font-size: 2rem !important;
   background-color: antiquewhite;
 }
@@ -66,13 +62,25 @@ input[type="checkbox"],radio {
   height: 2.3rem !important;
 }
 
-#btnBillingDateToday {
-  font-size: 2.3rem;
-  width: 20% !important;
-  background-color: darkseagreen !important;
-  border-color: darkseagreen;
-  color: #fff !important;
+#billings,#updateEntries {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
+
+#btnSave {
+  font-size: 20px;
+  background-color: blue !important;
+  border-color: #024488 !important;
+  float: right;
+}
+
+#btnComplete {
+  font-size: 20px;
+  background-color: red !important;
+  border-color: #024488 !important;
+  float: left;
+}
+
 #btnSubmitUpdates {
   font-size: 30px;
   width: 60% !important;

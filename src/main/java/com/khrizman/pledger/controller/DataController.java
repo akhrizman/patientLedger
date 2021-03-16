@@ -1,11 +1,13 @@
 package com.khrizman.pledger.controller;
 
-import com.khrizman.pledger.dto.LedgerEntryDto;
+import com.khrizman.pledger.dto.LedgerEntryDetailsDto;
+import com.khrizman.pledger.dto.BillingDto;
+import com.khrizman.pledger.dto.NewLedgerEntryDto;
+import com.khrizman.pledger.model.LedgerEntry;
 import com.khrizman.pledger.service.DataService;
+import com.khrizman.pledger.util.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -18,18 +20,30 @@ public class DataController {
     DataService dataService;
 
     @GetMapping("/entrySelection")
-    public List<LedgerEntryDto> getEntriesForSelection() {
+    public List<LedgerEntryDetailsDto> getEntriesForSelection() {
         return dataService.getEntriesForSelection();
     }
 
     @GetMapping("/ledgerEntry/{id}")
-    public LedgerEntryDto getEntry(@PathVariable int id) { return dataService.getLedgerEntry(id); }
+    public LedgerEntryDetailsDto getEntry(@PathVariable int id) { return dataService.getLedgerEntry(id); }
 
     @GetMapping("/billings/{entryId}")
-    public LedgerEntryDto getBillings(@PathVariable int entryId) {
+    public LedgerEntryDetailsDto getBillings(@PathVariable int entryId) {
         return dataService.getBillings(entryId);
     }
 
     @GetMapping("/billingOptions")
-    public LedgerEntryDto getBillingOptions() { return dataService.getBillingOptions(); }
+    public LedgerEntryDetailsDto getBillingOptions() { return dataService.getBillingOptions(); }
+
+    @PostMapping("/ledgerEntry")
+    @ResponseBody
+    public LedgerEntryDetailsDto createLedgerEntry(@RequestBody NewLedgerEntryDto newLedgerEntryDto) {
+        return dataService.createLedgerEntry(newLedgerEntryDto);
+    }
+
+    @PostMapping("/billing")
+    @ResponseBody
+    public LedgerEntryDetailsDto createBilling(@RequestBody BillingDto billingDto) {
+        return dataService.createBilling(billingDto);
+    }
 }
