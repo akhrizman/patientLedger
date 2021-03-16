@@ -18,6 +18,7 @@ import java.util.Date;
 public class Billing implements Serializable {
 
     @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private int id;
 
     private int ledgerEntryId;

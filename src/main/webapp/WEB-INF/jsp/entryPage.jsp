@@ -258,14 +258,14 @@ function hideAllBillingTypeLists() {
         document.querySelector('input[name="newBillingTypeSelection"]:checked').checked = false;
     }
 }
-function uncheckAllCategorySelections() {
+function unselectAllCategorySelections() {
     var selectedCategory = document.querySelector('input[name="newCategorySelection"]:checked');
     if (selectedCategory != null) {
         document.querySelector('input[name="newCategorySelection"]:checked').checked = false;
     }
 }
 function resetNewBillingForm() {
-    uncheckAllCategorySelections();
+    unselectAllCategorySelections();
     hideAllBillingTypeLists();
     setNewServiceDateToToday();
     document.getElementById("newBilledCheckbox").checked = false;
@@ -283,11 +283,33 @@ function getTodaysDate() {
 }
 function finalizeLedgerEntry() {
     alert("Button Not Functional");
+    //saveLedgerEntry();
+    // POSSIBLE RACE CONDITION
+    // check if all billings are both billed and reportComplete
+    //
 }
 function saveLedgerEntry() {
     var ledgerEntryId = document.getElementById("entryNames").value;
 
+    // find previous billings
+    const previousBillings = Array.from(document.querySelectorAll('[id^=checkboxes_]'));
+    var billingList = [];
+    for (i in previousBillings) {
+        billingId = previousBillings[i].id.split("_")[1];
+        var billedCheckbox = document.getElementById("billed_"+billingId);
+        if (billedCheckbox.checked) {
+            billedCheckbox.disabled = true;
+        }
+        var reportCompletedCheckbox = document.getElementById("reportComplete_"+billingId);
+        if (reportCompletedCheckbox.checked) {
+            reportCompletedCheckbox.disabled = true;
+        }
+        billingDto = {billed: billedCheckbox.checked, reportCompleted: reportCompletedCheckbox.checked};
+        billingList.push(billingDto);
+    }
+
     if (ledgerEntryId == 0) {
+        // Ledger Does not exist yet. Create it.
         initials = document.getElementById("initials").value;
         if (!initials) {
             alert("Missing Initials");
@@ -311,7 +333,6 @@ function saveLedgerEntry() {
             entryComplete: false
         };
 
-
         fetch("./ledgerEntry", {
             method: "POST",
             body: JSON.stringify(newLedgerEntryDto),
@@ -333,14 +354,12 @@ function saveLedgerEntry() {
                 newEntryOption.selected = true;
                 entryDropdown.appendChild(newEntryOption);
                 showEntryDetailInputs(false);
+                var newBillingDto = getNewBillingDto();
+                if (newLedgerEntryId && newBillingDto) {
+                    console.log("New Ledger Entry Created: " + newLedgerEntryId);
+                    createAndPopulateNewBilling(newBillingDto, newLedgerEntryId);
+                }
             }
-            var newBillingDto = getNewBillingDto();
-            if (newLedgerEntryId && newBillingDto != null) {
-                console.log("New Ledger Entry Created: " + newLedgerEntryId);
-                createAndPopulateNewBilling(newBillingDto, newLedgerEntryId);
-            }
-            hideAllBillingTypeLists();
-            uncheckAllCategorySelections();
         });
     } else {
         // Ledger Entry exists already, but need to collect changes to other billings
@@ -364,6 +383,7 @@ function createAndPopulateNewBilling(newBillingDto, ledgerEntryId) {
             return;
         } else {
             populateExistingBillings(newLedgerEntryDetailsDto);
+            resetNewBillingForm()
             console.log("New Billing Created: " + newLedgerEntryDetailsDto.billings[0].id);
         }
     });
@@ -371,36 +391,47 @@ function createAndPopulateNewBilling(newBillingDto, ledgerEntryId) {
 function getNewBillingDto() {
     var ledgerEntryId = document.getElementById("entryNames").value;
 
+    var previousBillingsExist = document.getElementById("billings").hasChildNodes();
     var selectedCategory = document.querySelector('input[name="newCategorySelection"]:checked');
-    if (selectedCategory == null) {
-        alert("Missing Category");
-        return null;
-    } else {
-        var categoryId = selectedCategory.value ;
-    }
-
     var selectedBillingType = document.querySelector('input[name="newBillingTypeSelection"]:checked');
-    if (selectedBillingType == null) {
-        alert("Missing Billing Type");
-        return null;
-    } else {
-        var billingTypeId = selectedBillingType.value;
+    var newServiceDate = document.getElementById("newServiceDate").value;
+    var billedCheckboxChecked = document.getElementById("newBilledCheckbox").checked;
+    var reportCompleteCheckboxChecked = document.getElementById("newReportCompleteCheckbox").checked;
+
+    // If user checked at least one of these, they probably meant to check more OR if no previous billings exist
+    // Notify User that a field is missing.
+    if (!previousBillingsExist || selectedCategory || selectedBillingType || billedCheckboxChecked || reportCompleteCheckboxChecked) {
+        if (!selectedCategory) {
+            alert("Missing Category");
+            return null;
+        } else {
+            var categoryId = selectedCategory.value ;
+        }
+
+        if (!selectedBillingType) {
+            alert("Missing Billing Type");
+            return null;
+        } else {
+            var billingTypeId = selectedBillingType.value;
+        }
+
+        if (!newServiceDate) {
+            alert("Missing Service Date");
+            return null;
+        }
     }
 
-    var newServiceDate = document.getElementById("newServiceDate");
-    if (newServiceDate) {
+    if (!categoryId && !billingTypeId && !billedCheckboxChecked && !reportCompleteCheckboxChecked) {
+        return null;
+    } else {
         return {
-            id: 0,
             ledgerEntryId: ledgerEntryId,
             categoryId: categoryId,
             billingTypeId: billingTypeId,
             newServiceDate: newServiceDate,
-            billed: document.getElementById("newBilledCheckbox").checked,
-            reportComplete: document.getElementById("newReportCompleteCheckbox").checked
+            billed: billedCheckboxChecked,
+            reportComplete: reportCompleteCheckboxChecked
         };
-    } else {
-        alert("Missing Service Date");
-        return null;
     }
 }
 </script>
