@@ -104,4 +104,15 @@ public class DataService {
                 getCategoryMap(),
                 getBillingTypeMap());
     }
+
+    public BillingDto updateBilling(BillingDto billingDto) {
+        //TODO: Use BillingRepository to update booleans
+        return null;
+    }
+
+    public LedgerEntry completeLedgerEntry(int id) {
+        //TODO: Check if all associated billings booleans are true,
+        // all data is complete and update status of entry.
+        return null;
+    }
 }

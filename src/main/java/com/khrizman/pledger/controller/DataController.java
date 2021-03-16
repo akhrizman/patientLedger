@@ -46,4 +46,16 @@ public class DataController {
     public LedgerEntryDetailsDto createBilling(@RequestBody BillingDto billingDto) {
         return dataService.createBilling(billingDto);
     }
+
+    @PutMapping("/billing")
+    @ResponseBody
+    public BillingDto updateBilling(@RequestBody BillingDto billingDto) {
+        return dataService.updateBilling(billingDto);
+    }
+
+    @PatchMapping("/ledgerEntry/{id}")
+    @ResponseBody
+    public LedgerEntry completeLedgerEntry(@PathVariable int id) {
+        return dataService.completeLedgerEntry(id);
+    }
 }

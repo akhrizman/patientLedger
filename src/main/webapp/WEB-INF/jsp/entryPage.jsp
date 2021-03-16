@@ -57,7 +57,7 @@
     <div id="billings"></div>
 
     <div id="updateEntries">
-      <button class="btn btn-primary" id="btnComplete" type="button" onclick="finalizeLedgerEntry();">COMPLETED</button>
+      <button class="btn btn-primary" id="btnComplete" type="button" onclick="finalizeLedgerEntry();">COMPLETE</button>
       <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry()">SAVE</button>
     </div>
 
@@ -281,32 +281,36 @@ function getTodaysDate() {
     var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
     return today;
 }
-function finalizeLedgerEntry() {
-    alert("Button Not Functional");
-    //saveLedgerEntry();
-    // POSSIBLE RACE CONDITION
-    // check if all billings are both billed and reportComplete
-    //
-}
 function saveLedgerEntry() {
     var ledgerEntryId = document.getElementById("entryNames").value;
 
     // find previous billings
     const previousBillings = Array.from(document.querySelectorAll('[id^=checkboxes_]'));
-    var billingList = [];
     for (i in previousBillings) {
         billingId = previousBillings[i].id.split("_")[1];
+
         var billedCheckbox = document.getElementById("billed_"+billingId);
-        if (billedCheckbox.checked) {
-            billedCheckbox.disabled = true;
-        }
         var reportCompletedCheckbox = document.getElementById("reportComplete_"+billingId);
-        if (reportCompletedCheckbox.checked) {
-            reportCompletedCheckbox.disabled = true;
-        }
-        billingDto = {billed: billedCheckbox.checked, reportCompleted: reportCompletedCheckbox.checked};
-        billingList.push(billingDto);
+
+        billingDto = {id: billingId, billed: billedCheckbox.checked, reportCompleted: reportCompletedCheckbox.checked};
+
+        fetch("./billing", {
+            method: "PUT",
+            headers: {'Content-type': 'application/json'}
+            })
+        .then(response => response.json())
+        .then(billingDto => {
+            if (billingDto.billed) {
+                billedCheckbox.disabled = true;
+            }
+            if (billingDto.reportComplete) {
+                reportCompletedCheckbox.disabled = true;
+            }
+        });
     }
+
+    // NEED TO PUT changes., passing in a List of billingDtos to update billings.
+
 
     if (ledgerEntryId == 0) {
         // Ledger Does not exist yet. Create it.
@@ -433,5 +437,24 @@ function getNewBillingDto() {
             reportComplete: reportCompleteCheckboxChecked
         };
     }
+}
+function finalizeLedgerEntry() {
+    // POSSIBLE RACE CONDITION
+    // check if all billings are both billed and reportComplete
+    alert("Button Not Functional");
+    saveLedgerEntry();
+    var ledgerEntryId = document.getElementById("entryNames").value;
+
+    //Check if all boxes are checked in the billings checkboxes, if yes, then fetch PATCH the update
+
+    fetch("./completeLedgerEntry/"+ledgerEntryId, {
+        method: "PATCH",
+        headers: {'Content-type': 'application/json'}
+        })
+    .then(response => response.json())
+    .then(success => {
+        window.location.reload(true);
+    });
+
 }
 </script>
