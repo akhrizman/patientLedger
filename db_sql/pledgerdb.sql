@@ -1,9 +1,11 @@
+DROP TABLE ledger_entry;
+DROP TABLE billing;
+
 CREATE TABLE ledger_entry (
 	id int NOT NULL AUTO_INCREMENT,
     age smallint NOT NULL,
     initials varchar(10),
-	start_date timestamp default CURRENT_TIMESTAMP NOT NULL,
-	end_date timestamp default CURRENT_TIMESTAMP NOT NULL,
+	start_date date NOT NULL,
     entry_complete boolean default false,
     created_date timestamp NOT NULL default CURRENT_TIMESTAMP,
     modified_date timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
@@ -12,8 +14,8 @@ CREATE TABLE ledger_entry (
 
 CREATE TABLE category (
 	id tinyint NOT NULL AUTO_INCREMENT,
-    PRIMARY KEY (id),
-    name varchar(50) NOT NULL
+    name varchar(50) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE billing_type (
@@ -25,7 +27,7 @@ CREATE TABLE billing_type (
 CREATE TABLE billing (
 	id int NOT NULL AUTO_INCREMENT,
     ledger_entry_id int NOT NULL,
-	service_date timestamp NOT NULL default CURRENT_TIMESTAMP,
+	service_date date NOT NULL,
     billing_type_id tinyint NOT NULL,
     category_id tinyint NOT NULL,
     billed boolean default false,

@@ -29,7 +29,7 @@
 
       <div>
         <label for="initials">Initials</label>
-        <input type="text" id="initials" name="initials">&nbsp;&nbsp;
+        <input type="text" id="initials" name="initials" onkeyup="this.value = this.value.toUpperCase();">&nbsp;&nbsp;
 
         <label for="age">Age</label>
         <input type="number" id="age" name="age">
@@ -47,10 +47,10 @@
           <label class="fieldLabels" for="newServiceDate">Bill Date</label>
           <input type="date" class="fieldInputs" id="newServiceDate" name="newServiceDate"><br><br>
           <input type="checkbox" id="newBilledCheckbox" name="newBilledCheckbox">
-          <label for="newBilledCheckbox">&nbsp;Billed&nbsp;&nbsp;&nbsp;&nbsp;</label>
+          <label for="newBilledCheckbox">Billed&nbsp;&nbsp;&nbsp;</label>
 
           <input type="checkbox" id="newReportCompleteCheckbox" name="newReportCompleteCheckbox">
-          <label for="newReportCompleteCheckbox">&nbsp;Reported</label>
+          <label for="newReportCompleteCheckbox">Reported</label>
         </div>
     </div>
 
@@ -59,7 +59,7 @@
     <div id="updateEntries">
       <button class="btn btn-primary" id="btnComplete" type="button" onclick="finalizeLedgerEntry();">COMPLETE</button>
       <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry()">SAVE</button>
-    </div>
+    </div><br><br><br><br><br>
 
   </div>
 
@@ -81,7 +81,6 @@ function populateEntrySelection() {
             var entryOption = document.createElement("option");
             entryOption.value = entries[i].ledgerEntry.id;
             entryOption.innerHTML = entries[i].name;
-            console.log(entries[i]);
             entryDropdown.appendChild(entryOption);
         }
     });
@@ -118,14 +117,16 @@ function showPatientDetails() {
         document.getElementById("startDate").value = getTodaysDate();
     }
 }
-function getAndPopulateBillings(entryId) {
-    fetch('./billings/' + entryId, {
+function getAndPopulateBillings(ledgerEntryId) {
+    fetch('./billings/'+ledgerEntryId, {
         method: 'GET',
         headers: {'Content-type': 'application/json'}
     })
     .then(response => response.json())
-    .then(dto => {
-        populateExistingBillings(dto);
+    .then(ledgerEntryDetailsDto => {
+        //FINDME
+        console.log(ledgerEntryDetailsDto.billings)
+        populateExistingBillings(ledgerEntryDetailsDto);
     });
 }
 function createNewBillingForm() {
@@ -202,36 +203,269 @@ function populateExistingBillings(dto) {
         serviceDate.innerHTML = dto.billings[i].serviceDate;
         billingDiv.appendChild(serviceDate);
 
+        var billingId = dto.billings[i].id;
         var checkboxesDiv = document.createElement("div");
-        checkboxesDiv.id = "checkboxes_" + dto.billings[i].id;
+        checkboxesDiv.id = "checkboxes_" + billingId;
 
         var billedInput = document.createElement("input");
         billedInput.type = "checkbox";
-        billedInput.id = "billed_" + dto.billings[i].id;
-        billedInput.name = "billed_" + dto.billings[i].id;
-        billedInput.checked = (dto.billings[i].billed);
-        billedInput.disabled = (dto.billings[i].billed);
+        billedInput.id = "billed_" + billingId;
+        billedInput.name = "billed_" + billingId;
+        billedInput.checked = dto.billings[i].billed;
+        console.log("billed checkbox_"+ billingId + " is "+dto.billings[i].billed);
+        console.log("billed checkbox_"+ billingId + " is "+billedInput.checked);
+        billedInput.disabled = dto.billings[i].billed;
         checkboxesDiv.appendChild(billedInput);
         var billedLabel = document.createElement("label");
-        billedLabel.htmlFor = "billed_" + dto.billings[i].id;
+        billedLabel.htmlFor = "billed_" + billingId;
         billedLabel.innerHTML = "&nbsp;Billed&nbsp;&nbsp;&nbsp;&nbsp;";
         checkboxesDiv.appendChild(billedLabel);
 
         var completedInput = document.createElement("input");
         completedInput.type = "checkbox";
-        completedInput.id = "reportComplete_" + dto.billings[i].id;
-        completedInput.name = "reportComplete_" + dto.billings[i].id;
-        completedInput.checked = (dto.billings[i].reportComplete);
-        completedInput.disabled = (dto.billings[i].reportComplete);
+        completedInput.id = "reportComplete_" + billingId;
+        completedInput.name = "reportComplete_" + billingId;
+        completedInput.checked = dto.billings[i].reportComplete;
+        console.log("reportComplete checkbox_"+ billingId + " is "+dto.billings[i].billed);
+        console.log("reportComplete checkbox_"+ billingId + " is "+completedInput.checked);
+        completedInput.disabled = dto.billings[i].reportComplete;
         checkboxesDiv.appendChild(completedInput);
         var completedLabel = document.createElement("label");
-        completedLabel.htmlFor = "reportComplete_" + dto.billings[i].id;
-        completedLabel.innerHTML = "&nbsp;Report Complete";
+        completedLabel.htmlFor = "reportComplete_" + billingId;
+        completedLabel.innerHTML = "&nbsp;Reported";
         checkboxesDiv.appendChild(completedLabel);
 
         billingDiv.appendChild(checkboxesDiv);
-
         billingsDiv.appendChild(billingDiv);
+    }
+}
+function createAndPopulateNewBilling(newBillingDto, ledgerEntryId) {
+    newBillingDto.ledgerEntryId = ledgerEntryId;
+    fetch("./billing", {
+        method: "POST",
+        body: JSON.stringify(newBillingDto),
+        headers: {'Content-type': 'application/json'}
+        })
+    .then(response => response.json())
+    .then(newLedgerEntryDetailsDto => {
+        console.log(newLedgerEntryDetailsDto.billings);
+        var newBillingId = newLedgerEntryDetailsDto.billings[0].id;
+        if (!newLedgerEntryDetailsDto.billings) {
+            alert("New Billing could not be Created.");
+            return;
+        } else {
+            console.log("New Billing Created: " + newBillingId);
+            fetch('./billing/'+newBillingId, {
+                method: 'GET',
+                headers: {'Content-type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(ledgerEntryDetailsDto => {
+                //FINDME
+                console.log(ledgerEntryDetailsDto.billings);
+                populateExistingBillings(ledgerEntryDetailsDto);
+                resetNewBillingForm();
+            });
+        }
+    });
+}
+
+
+
+// BUTTON FUNCTIONS
+function saveLedgerEntry() {
+    var ledgerEntryId = document.getElementById("entryNames").value;
+
+    // find previous billings
+    var previousBillings = Array.from(document.querySelectorAll('[id^=checkboxes_]'));
+
+    for (i in previousBillings) {
+        billingId = previousBillings[i].id.split("_")[1];
+        let billedCheckbox = document.getElementById("billed_"+billingId);
+        let reportCompleteCheckbox = document.getElementById("reportComplete_"+billingId);
+
+        billingDto = {
+            id: billingId,
+            billed: billedCheckbox.checked,
+            reportComplete:
+            reportCompleteCheckbox.checked
+        };
+
+        fetch("./billing", {
+            method: "PUT",
+            body: JSON.stringify(billingDto),
+            headers: {'Content-type': 'application/json'}
+            })
+        .then(response => response.json())
+        .then(billing => {
+            console.log("billing: " + JSON.stringify(billing));
+            if (billing.billed) {
+                billedCheckbox.disabled = true;
+            }
+            if (billing.reportComplete) {
+                reportCompleteCheckbox.disabled = true;
+            }
+        });
+    }
+
+    if (ledgerEntryId == 0) {
+        // Ledger Does not exist yet. Create it.
+        initials = document.getElementById("initials").value;
+        if (!initials) {
+            alert("Missing Initials");
+            return;
+        }
+        age = document.getElementById("age").value;
+        if (!age) {
+            alert("Missing Age");
+            return;
+        }
+        startDateString = document.getElementById("startDate").value;
+        if (!startDateString) {
+            alert("Missing Start Date");
+            return;
+        }
+
+        var newLedgerEntryDto = {
+            initials: initials,
+            age: age,
+            startDate: getDateForSubmission(startDateString),
+            entryComplete: false
+        };
+
+        fetch("./ledgerEntry", {
+            method: "POST",
+            body: JSON.stringify(newLedgerEntryDto),
+            headers: {'Content-type': 'application/json'}
+            })
+        .then((response) => response.json())
+        .then((newLedgerEntryDetailsDto) => {
+            var newLedgerEntryId = newLedgerEntryDetailsDto.ledgerEntry.id;
+            if (!newLedgerEntryId) {
+                alert("New Entry could not be Created.");
+                return;
+            } else {
+                var entryDropdown = document.getElementById("entryNames");
+                var newEntryOption = document.createElement("option");
+                newEntryOption.value = newLedgerEntryId;
+                newEntryOption.innerHTML = newLedgerEntryDetailsDto.name;
+                newEntryOption.selected = true;
+                entryDropdown.appendChild(newEntryOption);
+                showEntryDetailInputs(false);
+                var newBillingDto = getNewBillingDto();
+                if (newLedgerEntryId && newBillingDto) {
+                    console.log("New Ledger Entry Created: " + newLedgerEntryId);
+                    createAndPopulateNewBilling(newBillingDto, newLedgerEntryId);
+                }
+            }
+        });
+    } else {
+        // Ledger Entry exists already, but need to collect changes to other billings
+        var newBillingDto = getNewBillingDto();
+        if (newBillingDto != null) {
+            createAndPopulateNewBilling(newBillingDto, ledgerEntryId);
+        }
+    }
+}
+function finalizeLedgerEntry() {
+    // POSSIBLE RACE CONDITION, if billing is not created and put on the page before the update check, this wont work.
+    // Check if all billings are both billed and reportComplete
+    saveLedgerEntry();
+
+    var now = Date.now();
+    var end = now + 500;
+    while (now < end) { now = Date.now(); }
+
+    var selectedCategory = document.querySelector('input[name="newCategorySelection"]:checked');
+    var selectedBillingType = document.querySelector('input[name="newBillingTypeSelection"]:checked');
+    var newServiceDate = getDateForSubmission(document.getElementById("newServiceDate").value);
+    var billedCheckboxChecked = document.getElementById("newBilledCheckbox").checked;
+    var reportCompleteCheckboxChecked = document.getElementById("newReportCompleteCheckbox").checked;
+
+    // If user checked at least one of these, they probably meant to check more
+    // Notify User that a field is missing.
+    if (selectedCategory || selectedBillingType || billedCheckboxChecked || reportCompleteCheckboxChecked) {
+        if (!selectedCategory || !selectedBillingType || !newServiceDate) {
+            if (!confirm("Oops, new billing started but incomplete! Do you want to ignore it?")) {
+                return;
+            }
+        } else {
+            if (!confirm("Are you sure?")) {
+                return;
+            }
+        }
+    } else {
+        if (!confirm("Are you sure?")) {
+            return;
+        }
+    }
+
+    var ledgerEntryId = document.getElementById("entryNames").value;
+
+    //Check if all boxes are checked in the billings checkboxes, if yes, then fetch PATCH the update
+
+    fetch("./ledgerEntry/"+ledgerEntryId, {
+        method: "PATCH",
+        headers: {'Content-type': 'application/json'}
+        })
+    .then(response => response.json())
+    .then(ledgerEntry => {
+        if (ledgerEntry && ledgerEntry.entryComplete) {
+            window.location.reload(true);
+        } else {
+            alert("Could not Complete Entry. Add a billing or make sure all billings are complete.");
+        }
+    });
+
+}
+
+
+
+// HELPER FUNCTIONS
+function getNewBillingDto() {
+    var ledgerEntryId = document.getElementById("entryNames").value;
+
+    var previousBillingsExist = document.getElementById("billings").hasChildNodes();
+    var selectedCategory = document.querySelector('input[name="newCategorySelection"]:checked');
+    var selectedBillingType = document.querySelector('input[name="newBillingTypeSelection"]:checked');
+    var newServiceDate = getDateForSubmission(document.getElementById("newServiceDate").value);
+    var billedCheckboxChecked = document.getElementById("newBilledCheckbox").checked;
+    var reportCompleteCheckboxChecked = document.getElementById("newReportCompleteCheckbox").checked;
+
+    // If user checked at least one of these, they probably meant to check more OR if no previous billings exist
+    // Notify User that a field is missing.
+    if (!previousBillingsExist || selectedCategory || selectedBillingType || billedCheckboxChecked || reportCompleteCheckboxChecked) {
+        if (!selectedCategory) {
+            alert("Missing Category");
+            return null;
+        } else {
+            var categoryId = selectedCategory.value ;
+        }
+
+        if (!selectedBillingType) {
+            alert("Missing Billing Type");
+            return null;
+        } else {
+            var billingTypeId = selectedBillingType.value;
+        }
+
+        if (!newServiceDate) {
+            alert("Missing Service Date");
+            return null;
+        }
+    }
+
+    if (!categoryId && !billingTypeId && !billedCheckboxChecked && !reportCompleteCheckboxChecked) {
+        return null;
+    } else {
+        return {
+            ledgerEntryId: ledgerEntryId,
+            categoryId: categoryId,
+            billingTypeId: billingTypeId,
+            serviceDate: newServiceDate,
+            billed: billedCheckboxChecked,
+            reportComplete: reportCompleteCheckboxChecked
+        };
     }
 }
 function showEntryDetailInputs(show) {
@@ -281,183 +515,14 @@ function getTodaysDate() {
     var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
     return today;
 }
-function saveLedgerEntry() {
-    var ledgerEntryId = document.getElementById("entryNames").value;
-
-    // find previous billings
-    const previousBillings = Array.from(document.querySelectorAll('[id^=checkboxes_]'));
-    for (i in previousBillings) {
-        billingId = previousBillings[i].id.split("_")[1];
-
-        var billedCheckbox = document.getElementById("billed_"+billingId);
-        var reportCompletedCheckbox = document.getElementById("reportComplete_"+billingId);
-
-        billingDto = {id: billingId, billed: billedCheckbox.checked, reportComplete: reportCompletedCheckbox.checked};
-
-        fetch("./billing", {
-            method: "PUT",
-            body: JSON.stringify(billingDto),
-            headers: {'Content-type': 'application/json'}
-            })
-        .then(response => response.json())
-        .then(billing => {
-            if (billing.billed) {
-                billedCheckbox.disabled = true;
-            }
-            if (billing.reportComplete) {
-                reportCompletedCheckbox.disabled = true;
-            }
-        });
-    }
-
-    // NEED TO PUT changes., passing in a List of billingDtos to update billings.
-
-
-    if (ledgerEntryId == 0) {
-        // Ledger Does not exist yet. Create it.
-        initials = document.getElementById("initials").value;
-        if (!initials) {
-            alert("Missing Initials");
-            return;
-        }
-        age = document.getElementById("age").value;
-        if (!age) {
-            alert("Missing Age");
-            return;
-        }
-        startDate = document.getElementById("startDate").value;
-        if (!startDate) {
-            alert("Missing Start Date");
-            return;
-        }
-
-        var newLedgerEntryDto = {
-            initials: initials,
-            age: age,
-            startDate: startDate,
-            entryComplete: false
-        };
-
-        fetch("./ledgerEntry", {
-            method: "POST",
-            body: JSON.stringify(newLedgerEntryDto),
-            headers: {'Content-type': 'application/json'}
-            })
-        .then((response) => response.json())
-        .then((newLedgerEntryDetailsDto) => {
-            // DO A BUNCH OF STUFF
-            var newLedgerEntryId = newLedgerEntryDetailsDto.ledgerEntry.id;
-            if (!newLedgerEntryId) {
-                alert("New Entry could not be Created.");
-                return;
-            } else {
-                var entryDropdown = document.getElementById("entryNames");
-                var newEntryOption = document.createElement("option");
-                newEntryOption.value = newLedgerEntryId;
-                newEntryOption.innerHTML = newLedgerEntryDetailsDto.name;
-                newEntryOption.selected = true;
-                entryDropdown.appendChild(newEntryOption);
-                showEntryDetailInputs(false);
-                var newBillingDto = getNewBillingDto();
-                if (newLedgerEntryId && newBillingDto) {
-                    console.log("New Ledger Entry Created: " + newLedgerEntryId);
-                    createAndPopulateNewBilling(newBillingDto, newLedgerEntryId);
-                }
-            }
-        });
-    } else {
-        // Ledger Entry exists already, but need to collect changes to other billings
-        var newBillingDto = getNewBillingDto();
-        if (newBillingDto != null) {
-            createAndPopulateNewBilling(newBillingDto, ledgerEntryId);
-        }
-    }
-}
-function createAndPopulateNewBilling(newBillingDto, ledgerEntryId) {
-    newBillingDto.ledgerEntryId = ledgerEntryId;
-    fetch("./billing", {
-        method: "POST",
-        body: JSON.stringify(newBillingDto),
-        headers: {'Content-type': 'application/json'}
-        })
-    .then(response => response.json())
-    .then(newLedgerEntryDetailsDto => {
-        if (!newLedgerEntryDetailsDto.billings) {
-            alert("New Billing could not be Created.");
-            return;
-        } else {
-            populateExistingBillings(newLedgerEntryDetailsDto);
-            resetNewBillingForm()
-            console.log("New Billing Created: " + newLedgerEntryDetailsDto.billings[0].id);
-        }
-    });
-}
-function getNewBillingDto() {
-    var ledgerEntryId = document.getElementById("entryNames").value;
-
-    var previousBillingsExist = document.getElementById("billings").hasChildNodes();
-    var selectedCategory = document.querySelector('input[name="newCategorySelection"]:checked');
-    var selectedBillingType = document.querySelector('input[name="newBillingTypeSelection"]:checked');
-    var newServiceDate = document.getElementById("newServiceDate").value;
-    var billedCheckboxChecked = document.getElementById("newBilledCheckbox").checked;
-    var reportCompleteCheckboxChecked = document.getElementById("newReportCompleteCheckbox").checked;
-
-    // If user checked at least one of these, they probably meant to check more OR if no previous billings exist
-    // Notify User that a field is missing.
-    if (!previousBillingsExist || selectedCategory || selectedBillingType || billedCheckboxChecked || reportCompleteCheckboxChecked) {
-        if (!selectedCategory) {
-            alert("Missing Category");
-            return null;
-        } else {
-            var categoryId = selectedCategory.value ;
-        }
-
-        if (!selectedBillingType) {
-            alert("Missing Billing Type");
-            return null;
-        } else {
-            var billingTypeId = selectedBillingType.value;
-        }
-
-        if (!newServiceDate) {
-            alert("Missing Service Date");
-            return null;
-        }
-    }
-
-    if (!categoryId && !billingTypeId && !billedCheckboxChecked && !reportCompleteCheckboxChecked) {
-        return null;
-    } else {
-        return {
-            ledgerEntryId: ledgerEntryId,
-            categoryId: categoryId,
-            billingTypeId: billingTypeId,
-            newServiceDate: newServiceDate,
-            billed: billedCheckboxChecked,
-            reportComplete: reportCompleteCheckboxChecked
-        };
-    }
-}
-function finalizeLedgerEntry() {
-    // POSSIBLE RACE CONDITION
-    // check if all billings are both billed and reportComplete
-    saveLedgerEntry();
-    var ledgerEntryId = document.getElementById("entryNames").value;
-
-    //Check if all boxes are checked in the billings checkboxes, if yes, then fetch PATCH the update
-
-    fetch("./ledgerEntry/"+ledgerEntryId, {
-        method: "PATCH",
-        headers: {'Content-type': 'application/json'}
-        })
-    .then(response => response.json())
-    .then(ledgerEntry => {
-        if (ledgerEntry && ledgerEntry.entryComplete) {
-            window.location.reload(true);
-        } else {
-            alert("Could not Complete Entry. Add a billing or make sure all billings are complete.");
-        }
-    });
-
+function getDateForSubmission(dateString) {
+    var rawDate =new Date(dateString);
+    var offsetHours = rawDate.getTimezoneOffset()/60;
+    rawDate.setHours(rawDate.getHours()+offsetHours);
+    var dateToPost = new Date();
+    dateToPost.setFullYear(rawDate.getFullYear());
+    dateToPost.setMonth(rawDate.getMonth());
+    dateToPost.setDate(rawDate.getDate());
+    return dateToPost;
 }
 </script>

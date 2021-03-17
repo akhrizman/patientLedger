@@ -81,11 +81,6 @@ input[type="checkbox"],radio {
   float: left;
 }
 
-#btnSubmitUpdates {
-  font-size: 30px;
-  width: 60% !important;
-  float: right !important;
-  background-color: red !important;
-  border-color: #024488 !important;
-  color: #fff !important;
+#btnSave:active {
+  background-color: black !important;
 }

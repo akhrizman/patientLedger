@@ -22,15 +22,15 @@ public class DataService {
     private static final Logger log = Logger.getLogger(DataService.class.getName());
 
     @Autowired
-    LedgerEntryRepository ledgerEntryRepository;
+    private LedgerEntryRepository ledgerEntryRepository;
     @Autowired
-    BillingRepository billingRepository;
+    private BillingRepository billingRepository;
     @Autowired
-    CategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
     @Autowired
-    BillingTypeRepository billingTypeRepository;
+    private BillingTypeRepository billingTypeRepository;
     @Autowired
-    CategoryBillingTypeRepository categoryBillingTypeRepository;
+    private CategoryBillingTypeRepository categoryBillingTypeRepository;
 
     public List<LedgerEntry> getIncompleteLedgerEntries() {
         return ledgerEntryRepository.findAllByEntryCompleteOrderByStartDate(false);
@@ -53,6 +53,15 @@ public class DataService {
     public LedgerEntryDetailsDto getBillings(long ledgerEntryId) {
         return new LedgerEntryDetailsDto(
                 billingRepository.findAllByLedgerEntryIdOrderByServiceDate(ledgerEntryId),
+                getCategoryMap(),
+                getBillingTypeMap());
+    }
+
+    public LedgerEntryDetailsDto getBilling(long id) {
+        List<Billing> billings = new ArrayList<>();
+        billings.add(billingRepository.findById(id));
+        return new LedgerEntryDetailsDto(
+                billings,
                 getCategoryMap(),
                 getBillingTypeMap());
     }
@@ -91,16 +100,23 @@ public class DataService {
 
     @Transactional
     public LedgerEntryDetailsDto createBilling(BillingDto billingDto) {
-        List<Billing> billing = new ArrayList<>();
-        billing.add(billingRepository.save(Billing.builder()
+        List<Billing> billings = new ArrayList<>();
+
+        Billing billing = billingRepository.save(Billing.builder()
                 .ledgerEntryId(billingDto.getLedgerEntryId())
                 .categoryId(billingDto.getCategoryId())
                 .billingTypeId(billingDto.getBillingTypeId())
                 .serviceDate(billingDto.getServiceDate())
                 .billed(billingDto.isBilled())
                 .reportComplete(billingDto.isReportComplete())
-                .build()));
-        return new LedgerEntryDetailsDto(billing,
+                .build());
+
+        System.out.println("Billing returned after save: " + Utilities.serializeObjectToJson(billing));
+
+        Billing updatedBilling = billingRepository.findById(billing.getId());
+        System.out.println("Billing by calling DB: " + Utilities.serializeObjectToJson(updatedBilling));
+        billings.add(updatedBilling);
+        return new LedgerEntryDetailsDto(billings,
                 getCategoryMap(),
                 getBillingTypeMap());
     }
@@ -126,4 +142,5 @@ public class DataService {
         }
         return new LedgerEntry();
     }
+
 }
