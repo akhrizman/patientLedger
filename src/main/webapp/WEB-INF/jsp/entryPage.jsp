@@ -36,7 +36,7 @@
       </div><br>
 
       <label class="fieldLabels" for="startDate">Start Date</label>
-      <input type="date" class="fieldInputs" id="startDate" name="startDate"><br><br>
+      <input type="date" class="fieldInputs" id="startDate" name="startDate" onchange="updateNewBillingDate()"><br><br>
 
     </div><br>
 
@@ -57,8 +57,8 @@
     <div id="billings"></div>
 
     <div id="updateEntries">
-      <button class="btn btn-primary" id="btnComplete" type="button" onclick="finalizeLedgerEntry();">COMPLETE</button>
-      <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry()">SAVE</button>
+      <button class="btn btn-primary" id="btnComplete" type="button" onclick="saveLedgerEntry(true);">COMPLETE</button>
+      <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry(false)">SAVE</button>
     </div><br><br><br><br><br>
 
   </div>
@@ -124,7 +124,6 @@ function getAndPopulateBillings(ledgerEntryId) {
     })
     .then(response => response.json())
     .then(ledgerEntryDetailsDto => {
-        //FINDME
         console.log(ledgerEntryDetailsDto.billings)
         populateExistingBillings(ledgerEntryDetailsDto);
     });
@@ -239,13 +238,13 @@ function populateExistingBillings(dto) {
         billingsDiv.appendChild(billingDiv);
     }
 }
-function createAndPopulateNewBilling(newBillingDto, ledgerEntryId) {
+function createAndPopulateNewBilling(newBillingDto, ledgerEntryId, finalize) {
     newBillingDto.ledgerEntryId = ledgerEntryId;
     fetch("./billing", {
         method: "POST",
         body: JSON.stringify(newBillingDto),
         headers: {'Content-type': 'application/json'}
-        })
+    })
     .then(response => response.json())
     .then(newLedgerEntryDetailsDto => {
         console.log(newLedgerEntryDetailsDto.billings);
@@ -261,19 +260,23 @@ function createAndPopulateNewBilling(newBillingDto, ledgerEntryId) {
             })
             .then(response => response.json())
             .then(ledgerEntryDetailsDto => {
-                //FINDME
                 console.log(ledgerEntryDetailsDto.billings);
                 populateExistingBillings(ledgerEntryDetailsDto);
                 resetNewBillingForm();
             });
         }
+        if (finalize) {
+            finalizeLedgerEntry()
+        }
+        enableSaveButton();
     });
 }
 
 
 
 // BUTTON FUNCTIONS
-function saveLedgerEntry() {
+function saveLedgerEntry(finalize) {
+    disableSaveButton();
     var ledgerEntryId = document.getElementById("entryNames").value;
 
     // find previous billings
@@ -287,8 +290,7 @@ function saveLedgerEntry() {
         billingDto = {
             id: billingId,
             billed: billedCheckbox.checked,
-            reportComplete:
-            reportCompleteCheckbox.checked
+            reportComplete: reportCompleteCheckbox.checked
         };
 
         fetch("./billing", {
@@ -312,17 +314,20 @@ function saveLedgerEntry() {
         // Ledger Does not exist yet. Create it.
         initials = document.getElementById("initials").value;
         if (!initials) {
-            alert("Missing Initials");
+            alert("Missing Initials. Cannot create entry.");
+            enableSaveButton();
             return;
         }
         age = document.getElementById("age").value;
         if (!age) {
-            alert("Missing Age");
+            alert("Missing Age. Cannot create entry.");
+            enableSaveButton();
             return;
         }
         startDateString = document.getElementById("startDate").value;
         if (!startDateString) {
-            alert("Missing Start Date");
+            alert("Missing Start Date. Cannot create entry.");
+            enableSaveButton();
             return;
         }
 
@@ -338,11 +343,12 @@ function saveLedgerEntry() {
             body: JSON.stringify(newLedgerEntryDto),
             headers: {'Content-type': 'application/json'}
             })
-        .then((response) => response.json())
-        .then((newLedgerEntryDetailsDto) => {
+        .then(response => response.json())
+        .then(newLedgerEntryDetailsDto => {
             var newLedgerEntryId = newLedgerEntryDetailsDto.ledgerEntry.id;
             if (!newLedgerEntryId) {
                 alert("New Entry could not be Created.");
+                enableSaveButton();
                 return;
             } else {
                 var entryDropdown = document.getElementById("entryNames");
@@ -355,7 +361,12 @@ function saveLedgerEntry() {
                 var newBillingDto = getNewBillingDto();
                 if (newLedgerEntryId && newBillingDto) {
                     console.log("New Ledger Entry Created: " + newLedgerEntryId);
-                    createAndPopulateNewBilling(newBillingDto, newLedgerEntryId);
+                    createAndPopulateNewBilling(newBillingDto, newLedgerEntryId, finalize);
+                } else {
+                    if (finalize) {
+                        finalizeLedgerEntry()
+                    }
+                    enableSaveButton();
                 }
             }
         });
@@ -363,18 +374,24 @@ function saveLedgerEntry() {
         // Ledger Entry exists already, but need to collect changes to other billings
         var newBillingDto = getNewBillingDto();
         if (newBillingDto != null) {
-            createAndPopulateNewBilling(newBillingDto, ledgerEntryId);
+            createAndPopulateNewBilling(newBillingDto, ledgerEntryId, finalize);
+        } else {
+            if (finalize) {
+                finalizeLedgerEntry()
+            }
+            enableSaveButton();
         }
     }
 }
 function finalizeLedgerEntry() {
+    disableCompleteButton();
     // POSSIBLE RACE CONDITION, if billing is not created and put on the page before the update check, this wont work.
     // Check if all billings are both billed and reportComplete
-    saveLedgerEntry();
 
-    var now = Date.now();
-    var end = now + 500;
-    while (now < end) { now = Date.now(); }
+    // saveLedgerEntry();
+    // var now = Date.now();
+    // var end = now + 1000;
+    // while (now < end) { now = Date.now(); }
 
     var selectedCategory = document.querySelector('input[name="newCategorySelection"]:checked');
     var selectedBillingType = document.querySelector('input[name="newBillingTypeSelection"]:checked');
@@ -387,23 +404,23 @@ function finalizeLedgerEntry() {
     if (selectedCategory || selectedBillingType || billedCheckboxChecked || reportCompleteCheckboxChecked) {
         if (!selectedCategory || !selectedBillingType || !newServiceDate) {
             if (!confirm("Oops, new billing started but incomplete! Do you want to ignore it?")) {
+                enableCompleteButton();
                 return;
             }
         } else {
             if (!confirm("Are you sure?")) {
+                enableCompleteButton();
                 return;
             }
         }
     } else {
         if (!confirm("Are you sure?")) {
+            enableCompleteButton();
             return;
         }
     }
 
     var ledgerEntryId = document.getElementById("entryNames").value;
-
-    //Check if all boxes are checked in the billings checkboxes, if yes, then fetch PATCH the update
-
     fetch("./ledgerEntry/"+ledgerEntryId, {
         method: "PATCH",
         headers: {'Content-type': 'application/json'}
@@ -414,9 +431,9 @@ function finalizeLedgerEntry() {
             window.location.reload(true);
         } else {
             alert("Could not Complete Entry. Add a billing or make sure all billings are complete.");
+            enableCompleteButton();
         }
     });
-
 }
 
 
@@ -436,21 +453,21 @@ function getNewBillingDto() {
     // Notify User that a field is missing.
     if (!previousBillingsExist || selectedCategory || selectedBillingType || billedCheckboxChecked || reportCompleteCheckboxChecked) {
         if (!selectedCategory) {
-            alert("Missing Category");
+            alert("Missing Category. Cannot create billing.");
             return null;
         } else {
             var categoryId = selectedCategory.value ;
         }
 
         if (!selectedBillingType) {
-            alert("Missing Billing Type");
+            alert("Missing Billing Type. Cannot create billing.");
             return null;
         } else {
             var billingTypeId = selectedBillingType.value;
         }
 
         if (!newServiceDate) {
-            alert("Missing Service Date");
+            alert("Missing Service Date. Cannot create billing.");
             return null;
         }
     }
@@ -524,5 +541,25 @@ function getDateForSubmission(dateString) {
     dateToPost.setMonth(rawDate.getMonth());
     dateToPost.setDate(rawDate.getDate());
     return dateToPost;
+}
+function updateNewBillingDate() {
+    var entryDate = document.getElementById("startDate").value;
+    document.getElementById("newServiceDate").value = entryDate;
+}
+function disableSaveButton() {
+    document.getElementById("btnSave").disabled = true;
+    document.getElementById("btnSave").innerHTML = "Saving...";
+}
+function disableCompleteButton() {
+    document.getElementById("btnComplete").disabled = true;
+    document.getElementById("btnComplete").innerHTML = "Completing...";
+}
+function enableSaveButton() {
+    document.getElementById("btnSave").disabled = false;
+    document.getElementById("btnSave").innerHTML = "SAVE";
+}
+function enableCompleteButton() {
+    document.getElementById("btnComplete").disabled = false;
+    document.getElementById("btnComplete").innerHTML = "COMPLETE";
 }
 </script>

@@ -53,7 +53,6 @@ public class DataController {
     @ResponseBody
     public LedgerEntryDetailsDto getBillings(@PathVariable long ledgerEntryId) {
         LedgerEntryDetailsDto ledgerEntryDetailsDto = dataService.getBillings(ledgerEntryId);
-        System.out.println(Utilities.serializeObjectToJson(ledgerEntryDetailsDto.getBillings()));
         return ledgerEntryDetailsDto;
     }
 
@@ -61,7 +60,6 @@ public class DataController {
     @ResponseBody
     public LedgerEntryDetailsDto getBilling(@PathVariable long id) {
         LedgerEntryDetailsDto ledgerEntryDetailsDto = dataService.getBilling(id);
-        System.out.println(Utilities.serializeObjectToJson(ledgerEntryDetailsDto));
         return ledgerEntryDetailsDto;
     }
 
@@ -69,7 +67,6 @@ public class DataController {
     @ResponseBody
     public LedgerEntryDetailsDto createBilling(@RequestBody BillingDto billingDto) {
         LedgerEntryDetailsDto ledgerEntryDetailsDto = dataService.createBilling(billingDto);
-        System.out.println(Utilities.serializeObjectToJson(ledgerEntryDetailsDto.getBillings()));
         return ledgerEntryDetailsDto;
     }
 

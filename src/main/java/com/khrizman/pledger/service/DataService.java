@@ -111,12 +111,10 @@ public class DataService {
                 .reportComplete(billingDto.isReportComplete())
                 .build());
 
-        System.out.println("Billing returned after save: " + Utilities.serializeObjectToJson(billing));
-
         Billing updatedBilling = billingRepository.findById(billing.getId());
-        System.out.println("Billing by calling DB: " + Utilities.serializeObjectToJson(updatedBilling));
         billings.add(updatedBilling);
-        return new LedgerEntryDetailsDto(billings,
+        return new LedgerEntryDetailsDto(
+                billings,
                 getCategoryMap(),
                 getBillingTypeMap());
     }

@@ -19,7 +19,7 @@ public class LedgerEntry implements Serializable {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
 
-    @Getter @Setter(AccessLevel.NONE) private String initials;
+    private String initials;
 
     private int age;
     private boolean entryComplete;
@@ -37,13 +37,5 @@ public class LedgerEntry implements Serializable {
         this.age = newLedgerEntryDto.getAge();
         this.entryComplete = newLedgerEntryDto.isEntryComplete();
         this.startDate = newLedgerEntryDto.getStartDate();
-    }
-
-    public String getInitials() {
-        return initials.toUpperCase();
-    }
-
-    public void setInitials(String initials) {
-        this.initials = initials.toUpperCase();
     }
 }

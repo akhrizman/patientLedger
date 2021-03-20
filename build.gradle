@@ -3,11 +3,17 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'war'
+	id 'application'
+}
+
+bootWar {
+	archiveName 'pledger.war'
 }
 
 group = 'com.khrizman'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
+mainClassName = 'com.khrizman.pledger.PledgerApplication'
 
 configurations {
 	compileOnly {
