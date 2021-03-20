@@ -15,4 +15,9 @@ public class HomeController {
     public String homePage() {
         return "entryPage";
     }
+
+    @GetMapping("/ledger")
+    public String ledgerPage() {
+        return "ledgerPage";
+    }
 }

@@ -1,5 +1,6 @@
 package com.khrizman.pledger.controller;
 
+import com.khrizman.pledger.dto.BillingEntryDto;
 import com.khrizman.pledger.dto.LedgerEntryDetailsDto;
 import com.khrizman.pledger.dto.BillingDto;
 import com.khrizman.pledger.dto.NewLedgerEntryDto;
@@ -48,6 +49,12 @@ public class DataController {
     @GetMapping("/billingOptions")
     @ResponseBody
     public LedgerEntryDetailsDto getBillingOptions() { return dataService.getBillingOptions(); }
+
+    @GetMapping("/billingEntries")
+    @ResponseBody
+    public List<BillingEntryDto> getAllBillings() {
+        return dataService.getAllBillings();
+    }
 
     @GetMapping("/billings/{ledgerEntryId}")
     @ResponseBody

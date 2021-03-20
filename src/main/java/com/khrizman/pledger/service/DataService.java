@@ -1,5 +1,6 @@
 package com.khrizman.pledger.service;
 
+import com.khrizman.pledger.dto.BillingEntryDto;
 import com.khrizman.pledger.dto.LedgerEntryDetailsDto;
 import com.khrizman.pledger.dto.BillingDto;
 import com.khrizman.pledger.dto.NewLedgerEntryDto;
@@ -48,6 +49,24 @@ public class DataService {
 
     public LedgerEntryDetailsDto getLedgerEntry(long id) {
         return new LedgerEntryDetailsDto(ledgerEntryRepository.findById(id));
+    }
+
+    public List<BillingEntryDto> getAllBillings() {
+        List<LedgerEntry> ledgerEntries = ledgerEntryRepository.findAll();
+        Map<Long, LedgerEntry> ledgerEntryMap = ledgerEntries.stream().collect(Collectors.toMap(LedgerEntry::getId, le -> le));
+        List<Billing> billings = billingRepository.findAll();
+        return billings.stream().map(be -> BillingEntryDto.builder()
+                .serviceDate(be.getServiceDate())
+                .billingId(be.getId())
+                .ledgerEntryId(be.getLedgerEntryId())
+                .category(getCategoryMap().get(be.getCategoryId()))
+                .billingType(getBillingTypeMap().get(be.getBillingTypeId()))
+                .billed(be.isBilled())
+                .reportComplete(be.isReportComplete())
+                .initials(ledgerEntryMap.get(be.getLedgerEntryId()).getInitials())
+                .age(ledgerEntryMap.get(be.getLedgerEntryId()).getAge())
+                .build()
+                ).collect(Collectors.toList());
     }
 
     public LedgerEntryDetailsDto getBillings(long ledgerEntryId) {

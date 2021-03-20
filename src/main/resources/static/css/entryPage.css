@@ -84,3 +84,9 @@ input[type="checkbox"],radio {
 #btnSave:active {
   background-color: black !important;
 }
+
+#btnViewLedger {
+  font-size: 20px;
+  width: 100%;
+  background-color: green !important;
+}

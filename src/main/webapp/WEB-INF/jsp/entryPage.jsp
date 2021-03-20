@@ -61,6 +61,9 @@
       <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry(false)">SAVE</button>
     </div><br><br><br><br><br>
 
+    <div>
+      <button id="btnViewLedger" class="btn btn-primary" onclick="window.location.href='./ledger';">VIEW LEDGER</button><br>
+    </div>
   </div>
 
 </body>
@@ -211,8 +214,6 @@ function populateExistingBillings(dto) {
         billedInput.id = "billed_" + billingId;
         billedInput.name = "billed_" + billingId;
         billedInput.checked = dto.billings[i].billed;
-        console.log("billed checkbox_"+ billingId + " is "+dto.billings[i].billed);
-        console.log("billed checkbox_"+ billingId + " is "+billedInput.checked);
         billedInput.disabled = dto.billings[i].billed;
         checkboxesDiv.appendChild(billedInput);
         var billedLabel = document.createElement("label");
@@ -225,8 +226,6 @@ function populateExistingBillings(dto) {
         completedInput.id = "reportComplete_" + billingId;
         completedInput.name = "reportComplete_" + billingId;
         completedInput.checked = dto.billings[i].reportComplete;
-        console.log("reportComplete checkbox_"+ billingId + " is "+dto.billings[i].billed);
-        console.log("reportComplete checkbox_"+ billingId + " is "+completedInput.checked);
         completedInput.disabled = dto.billings[i].reportComplete;
         checkboxesDiv.appendChild(completedInput);
         var completedLabel = document.createElement("label");
