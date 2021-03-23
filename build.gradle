@@ -33,6 +33,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	compileOnly 'org.projectlombok:lombok'
 
+
 	providedRuntime 'mysql:mysql-connector-java' // Local Tomcat Server
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat' // Local Tomcat Server
 //	implementation 'mysql:mysql-connector-java' // AWS

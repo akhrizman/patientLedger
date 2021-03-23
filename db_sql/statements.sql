@@ -20,13 +20,18 @@ INSERT INTO billing (ledger_entry_id, service_date, billing_type_id, category_id
 SELECT * FROM ledger_entry;
 SELECT * FROM billing;
 
-DELETE FROM billing where ledger_entry_id > 1;
-DELETE from ledger_entry WHERE id > 4;
 
 
+-- View Completed Entries
 SELECT b.service_date, c.name, bt.name, le.initials, le.age, le.start_date, b.ledger_entry_id, b.created_date FROM billing b
 INNER JOIN ledger_entry le ON le.id = b.ledger_entry_id
 INNER JOIN category c ON c.id = b.category_id
 INNER JOIN billing_type bt ON bt.id = b.billing_type_id
 WHERE le.entry_complete
+
+-- View All Entries
+SELECT b.service_date, c.name AS category, bt.name AS billing_type, le.initials, le.age, b.billed, b.report_complete, le.entry_complete , le.start_date, b.ledger_entry_id, b.created_date FROM billing b
+INNER JOIN ledger_entry le ON le.id = b.ledger_entry_id
+INNER JOIN category c ON c.id = b.category_id
+INNER JOIN billing_type bt ON bt.id = b.billing_type_id
 ORDER BY b.id ASC
