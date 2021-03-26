@@ -90,3 +90,11 @@ input[type="checkbox"],radio {
   width: 100%;
   background-color: green !important;
 }
+
+#btnEditEntryLedger, #btnUpdateEntryLedger, #btnCancelUpdate {
+  display: none;
+}
+
+.glyphicon {
+    font-size: 20px;
+}

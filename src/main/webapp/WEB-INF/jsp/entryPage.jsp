@@ -38,6 +38,17 @@
       <label class="fieldLabels" for="startDate">Start Date</label>
       <input type="date" class="fieldInputs" id="startDate" name="startDate" onchange="updateNewBillingDate()"><br><br>
 
+      <button type="button" class="btn btn-default btn-sm" id="btnEditEntryLedger" onclick="enableEntryLedgerEditing();">
+        <span class="glyphicon glyphicon-pencil" id="editIcon"></span>
+      </button>
+      <button type="button" class="btn btn-default btn-sm" id="btnUpdateEntryLedger" onclick="updateEntryLedger();">
+        <span class="glyphicon glyphicon-save" id="saveIcon"></span>
+      </button>&nbsp;&nbsp;
+      <button type="button" class="btn btn-default btn-sm" id="btnCancelUpdate" onclick="cancelEditingLedger();">
+        <span class="glyphicon glyphicon-remove" id="saveIcon"></span>
+      </button>
+
+
     </div><br>
 
     <div id="newBilling">
@@ -58,7 +69,7 @@
 
     <div id="updateEntries">
       <button class="btn btn-primary" id="btnComplete" type="button" onclick="saveLedgerEntry(true);">COMPLETE</button>
-      <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry(false)">SAVE</button>
+      <button class="btn btn-primary" id="btnSave" type="button" onclick="saveLedgerEntry(false);">SAVE</button>
     </div><br><br><br><br><br>
 
     <div>
@@ -93,6 +104,8 @@ function showPatientDetails() {
     var entryId = document.getElementById("entryNames").value;
 
     if (entryId != 0) {
+        disableEntryLedgerEditing()
+        document.getElementById("btnEditEntryLedger").style.display = "inline-block";
         showEntryDetailInputs(false);
         fetch('./ledgerEntry/' + entryId, {
             method: 'GET',
@@ -118,6 +131,7 @@ function showPatientDetails() {
         document.getElementById("initials").value = "";
         document.getElementById("age").value = "";
         document.getElementById("startDate").value = getTodaysDate();
+        disableEditingButtons();
     }
 }
 function getAndPopulateBillings(ledgerEntryId) {
@@ -127,7 +141,6 @@ function getAndPopulateBillings(ledgerEntryId) {
     })
     .then(response => response.json())
     .then(ledgerEntryDetailsDto => {
-        console.log(ledgerEntryDetailsDto.billings)
         populateExistingBillings(ledgerEntryDetailsDto);
     });
 }
@@ -420,7 +433,7 @@ function finalizeLedgerEntry() {
     }
 
     var ledgerEntryId = document.getElementById("entryNames").value;
-    fetch("./ledgerEntry/"+ledgerEntryId, {
+    fetch("./completeLedgerEntry/"+ledgerEntryId, {
         method: "PATCH",
         headers: {'Content-type': 'application/json'}
         })
@@ -560,5 +573,67 @@ function enableSaveButton() {
 function enableCompleteButton() {
     document.getElementById("btnComplete").disabled = false;
     document.getElementById("btnComplete").innerHTML = "COMPLETE";
+}
+function enableEntryLedgerEditing() {
+    document.getElementById("btnEditEntryLedger").style.display = "none";
+    document.getElementById("btnUpdateEntryLedger").style.display = "inline-block";
+    document.getElementById("btnCancelUpdate").style.display = "inline-block";
+    showEntryDetailInputs(true);
+}
+function disableEntryLedgerEditing() {
+    document.getElementById("btnEditEntryLedger").style.display = "inline-block";
+    document.getElementById("btnUpdateEntryLedger").style.display = "none";
+    document.getElementById("btnCancelUpdate").style.display = "none";
+    showEntryDetailInputs(false);
+}
+function disableEditingButtons() {
+    document.getElementById("btnEditEntryLedger").style.display = "none";
+    document.getElementById("btnUpdateEntryLedger").style.display = "none";
+    document.getElementById("btnCancelUpdate").style.display = "none";
+}
+function updateEntryLedger() {
+    disableEntryLedgerEditing();
+    var ledgerEntryId = document.getElementById("entryNames").value;
+
+    var ledgerEntry = new Object();
+    ledgerEntry.id = ledgerEntryId;
+    ledgerEntry.initials = document.getElementById("initials").value;
+    ledgerEntry.age = document.getElementById("age").value;
+    ledgerEntry.startDate = getDateForSubmission(document.getElementById("startDate").value);
+
+    fetch("./ledgerEntry", {
+        method: "PATCH",
+        body: JSON.stringify(ledgerEntry),
+        headers: {'Content-type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(savedLedgerEntry => {
+        if (savedLedgerEntry != null && savedLedgerEntry.id == ledgerEntry.id) {
+            showEntryDetailInputs(false);
+        } else {
+            alert("Oops! Something went wrong. Could Not Save Entry Details.");
+        }
+        resetEntryDetailsWithCurrentEntry(ledgerEntryId);
+    });
+}
+function cancelEditingLedger() {
+    var ledgerEntryId = document.getElementById("entryNames").value;
+    resetEntryDetailsWithCurrentEntry(ledgerEntryId);
+}
+function resetEntryDetailsWithCurrentEntry(ledgerEntryId) {
+    disableEntryLedgerEditing();
+    fetch('./ledgerEntry/'+ledgerEntryId, {
+        method: 'GET',
+        headers: {'Content-type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(ledgerEntryDetailsDto => {
+        console.log(ledgerEntryDetailsDto.ledgerEntry)
+        document.getElementById("initials").value = ledgerEntryDetailsDto.ledgerEntry.initials;
+        document.getElementById("age").value = ledgerEntryDetailsDto.ledgerEntry.age;
+        document.getElementById("startDate").value = ledgerEntryDetailsDto.ledgerEntry.startDate;
+        var entryDropdown = document.getElementById("entryNames");
+        entryDropdown.options[entryDropdown.selectedIndex].text = ledgerEntryDetailsDto.name;
+    });
 }
 </script>

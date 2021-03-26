@@ -38,10 +38,16 @@ public class DataController {
         return dataService.createLedgerEntry(newLedgerEntryDto);
     }
 
-    @PatchMapping("/ledgerEntry/{id}")
+    @PatchMapping("/completeLedgerEntry/{id}")
     @ResponseBody
     public LedgerEntry completeLedgerEntry(@PathVariable long id) {
         return dataService.completeLedgerEntry(id);
+    }
+
+    @PatchMapping("/ledgerEntry")
+    @ResponseBody
+    public LedgerEntry completeLedgerEntry(@RequestBody LedgerEntry ledgerEntry) {
+        return dataService.updateLedgerEntry(ledgerEntry);
     }
 
 

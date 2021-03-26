@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -160,4 +161,16 @@ public class DataService {
         return new LedgerEntry();
     }
 
+    @Transactional
+    public LedgerEntry updateLedgerEntry(LedgerEntry ledgerEntry) {
+        LedgerEntry existingEntry = ledgerEntryRepository.findById(ledgerEntry.getId());
+        if (ledgerEntry != null) {
+            existingEntry.setInitials(ledgerEntry.getInitials());
+            existingEntry.setAge(ledgerEntry.getAge());
+            existingEntry.setStartDate(ledgerEntry.getStartDate());
+            existingEntry.setModifiedDate(new Date());
+            return ledgerEntryRepository.save(existingEntry);
+        }
+        return new LedgerEntry();
+    }
 }
