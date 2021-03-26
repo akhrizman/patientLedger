@@ -2,13 +2,10 @@ package com.khrizman.pledger.controller;
 
 import com.khrizman.pledger.dto.BillingEntryDto;
 import com.khrizman.pledger.dto.LedgerEntryDetailsDto;
-import com.khrizman.pledger.dto.BillingDto;
 import com.khrizman.pledger.dto.NewLedgerEntryDto;
 import com.khrizman.pledger.model.Billing;
 import com.khrizman.pledger.model.LedgerEntry;
 import com.khrizman.pledger.service.DataService;
-import com.khrizman.pledger.util.Utilities;
-import jdk.jshell.execution.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,15 +75,19 @@ public class DataController {
 
     @PostMapping("/billing")
     @ResponseBody
-    public LedgerEntryDetailsDto createBilling(@RequestBody BillingDto billingDto) {
-        LedgerEntryDetailsDto ledgerEntryDetailsDto = dataService.createBilling(billingDto);
+    public LedgerEntryDetailsDto createBilling(@RequestBody Billing billing) {
+        LedgerEntryDetailsDto ledgerEntryDetailsDto = dataService.createBilling(billing);
         return ledgerEntryDetailsDto;
     }
 
     @PutMapping("/billing")
     @ResponseBody
-    public Billing updateBilling(@RequestBody BillingDto billingDto) {
-        return dataService.updateBilling(billingDto);
+    public Billing updateBilling(@RequestBody Billing billing) {
+        return dataService.updateBilling(billing);
     }
 
+    @DeleteMapping("/billing/{id}")
+    public void deleteBilling(@PathVariable long id) {
+        dataService.deleteBilling(id);
+    }
 }

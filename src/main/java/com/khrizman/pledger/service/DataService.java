@@ -2,11 +2,9 @@ package com.khrizman.pledger.service;
 
 import com.khrizman.pledger.dto.BillingEntryDto;
 import com.khrizman.pledger.dto.LedgerEntryDetailsDto;
-import com.khrizman.pledger.dto.BillingDto;
 import com.khrizman.pledger.dto.NewLedgerEntryDto;
 import com.khrizman.pledger.model.*;
 import com.khrizman.pledger.repository.*;
-import com.khrizman.pledger.util.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -119,19 +117,19 @@ public class DataService {
     }
 
     @Transactional
-    public LedgerEntryDetailsDto createBilling(BillingDto billingDto) {
+    public LedgerEntryDetailsDto createBilling(Billing billing) {
         List<Billing> billings = new ArrayList<>();
 
-        Billing billing = billingRepository.save(Billing.builder()
-                .ledgerEntryId(billingDto.getLedgerEntryId())
-                .categoryId(billingDto.getCategoryId())
-                .billingTypeId(billingDto.getBillingTypeId())
-                .serviceDate(billingDto.getServiceDate())
-                .billed(billingDto.isBilled())
-                .reportComplete(billingDto.isReportComplete())
+        Billing savedBilling = billingRepository.save(Billing.builder()
+                .ledgerEntryId(billing.getLedgerEntryId())
+                .categoryId(billing.getCategoryId())
+                .billingTypeId(billing.getBillingTypeId())
+                .serviceDate(billing.getServiceDate())
+                .billed(billing.isBilled())
+                .reportComplete(billing.isReportComplete())
                 .build());
 
-        Billing updatedBilling = billingRepository.findById(billing.getId());
+        Billing updatedBilling = billingRepository.findById(savedBilling.getId());
         billings.add(updatedBilling);
         return new LedgerEntryDetailsDto(
                 billings,
@@ -140,11 +138,11 @@ public class DataService {
     }
 
     @Transactional
-    public Billing updateBilling(BillingDto billingDto) {
-        Billing billing = billingRepository.findById(billingDto.getId());
-        billing.setBilled(billingDto.isBilled());
-        billing.setReportComplete(billingDto.isReportComplete());
-        return billingRepository.save(billing);
+    public Billing updateBilling(Billing billing) {
+        Billing billingToUpdate = billingRepository.findById(billing.getId());
+        billingToUpdate.setBilled(billing.isBilled());
+        billingToUpdate.setReportComplete(billing.isReportComplete());
+        return billingRepository.save(billingToUpdate);
     }
 
     @Transactional
@@ -172,5 +170,10 @@ public class DataService {
             return ledgerEntryRepository.save(existingEntry);
         }
         return new LedgerEntry();
+    }
+
+    @Transactional
+    public void deleteBilling(long id) {
+        billingRepository.deleteById(id);
     }
 }

@@ -34,3 +34,11 @@
   background-color: #008B8B;
   color: white;
 }
+
+#btnSaveBilling {
+  display: none;
+}
+
+.glyphicon {
+  font-size: 15px;
+}

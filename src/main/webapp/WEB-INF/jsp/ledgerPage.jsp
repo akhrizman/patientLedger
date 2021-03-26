@@ -32,6 +32,7 @@
           <th>Reported</th>
           <th>Category</th>
           <th>Type</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -52,18 +53,18 @@ function populateLedger() {
     .then(billings => {
         var ledgerTable = document.getElementById("ledgerTable");
         for (i in billings) {
-            var billingRow = document.createElement("tr");
-            billingRow.id = "billingId_"+billings[i].billingId;
+            let billingRow = document.createElement("tr");
+            billingRow.id = billings[i].billingId;
 
-            var serviceDate = document.createElement("td");
+            let serviceDate = document.createElement("td");
             serviceDate.innerHTML = billings[i].serviceDate;
             billingRow.appendChild(serviceDate);
 
-            var patient = document.createElement("td");
+            let patient = document.createElement("td");
             patient.innerHTML = billings[i].initials + "-" + billings[i].age;
             billingRow.appendChild(patient);
 
-            var billed = document.createElement("td");
+            let billed = document.createElement("td");
             if (billings[i].billed) {
                 billed.innerHTML = "YES";
             } else {
@@ -72,7 +73,7 @@ function populateLedger() {
             }
             billingRow.appendChild(billed);
 
-            var reportComplete = document.createElement("td");
+            let reportComplete = document.createElement("td");
             if (billings[i].reportComplete) {
                 reportComplete.innerHTML = "YES";
             } else {
@@ -81,18 +82,63 @@ function populateLedger() {
             }
             billingRow.appendChild(reportComplete);
 
-            var category = document.createElement("td");
+            let category = document.createElement("td");
             category.innerHTML = billings[i].category;
             billingRow.appendChild(category);
 
-            var billingType = document.createElement("td");
+            let billingType = document.createElement("td");
             billingType.innerHTML = billings[i].billingType;
             billingRow.appendChild(billingType);
+
+            let trashButtonCell = document.createElement("td");
+            trashButtonCell.innerHTML =
+            "<button type='button' onclick='enableBillingEditing(this);' class='btn btn-default btn-sm' id='btnEnableBillingEditing'>" +
+                    "<span class='glyphicon glyphicon-pencil' />" +
+                    "</button>&nbsp;" +
+            "<button type='button' onclick='saveBilling(this);' class='btn btn-default btn-sm' id='btnSaveBilling'>" +
+                    "<span class='glyphicon glyphicon-save' />" +
+                    "</button>&nbsp;" +
+            "<button type='button' onclick='deleteBilling(this);' class='btn btn-default btn-sm'>" +
+                    "<span class='glyphicon glyphicon-trash' />" +
+                    "</button>";
+            billingRow.appendChild(trashButtonCell);
 
             ledgerTable.appendChild(billingRow);
         }
     });
 }
-
-
+function deleteBilling(button) {
+    var billingId = $(button).parents("tr").attr('id');
+    var originalColor = document.getElementById(billingId).style.background;
+    document.getElementById(billingId).style.background = "red";
+    if (!confirm("Are you Sure? This cannot be undone.")) {
+        document.getElementById(billingId).style.background = originalColor;
+        return;
+    }
+    fetch('./billing/'+billingId, {
+        method: 'DELETE',
+        headers: {'Content-type': 'application/json'}
+    })
+    .then( response => {
+        if (response.status === 200) {
+            console.log("SUCCESSS");
+            $(button).parents("tr").remove();
+        } else {
+            console.log("SOMETHING WENT WRONG");
+            document.getElementById(billingId).style.background = originalColor;
+        }
+    });
+}
+function enableBillingEditing(button) {
+    document.getElementById("btnEnableBillingEditing").style.display = "none";
+    document.getElementById("btnSaveBilling").style.display = "inline-block";
+    // change cell text to date picker input and default with the original values.
+    // change cell billed & reported to check boxes
+}
+function saveBilling(button) {
+    document.getElementById("btnEnableBillingEditing").style.display = "inline-block";
+    document.getElementById("btnSaveBilling").style.display = "none";
+    // fetch the update
+    // reload the page
+}
 </script>

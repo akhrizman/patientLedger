@@ -250,11 +250,11 @@ function populateExistingBillings(dto) {
         billingsDiv.appendChild(billingDiv);
     }
 }
-function createAndPopulateNewBilling(newBillingDto, ledgerEntryId, finalize) {
-    newBillingDto.ledgerEntryId = ledgerEntryId;
+function createAndPopulateNewBilling(newBilling, ledgerEntryId, finalize) {
+    newBilling.ledgerEntryId = ledgerEntryId;
     fetch("./billing", {
         method: "POST",
-        body: JSON.stringify(newBillingDto),
+        body: JSON.stringify(newBilling),
         headers: {'Content-type': 'application/json'}
     })
     .then(response => response.json())
@@ -299,7 +299,7 @@ function saveLedgerEntry(finalize) {
         let billedCheckbox = document.getElementById("billed_"+billingId);
         let reportCompleteCheckbox = document.getElementById("reportComplete_"+billingId);
 
-        billingDto = {
+        billing = {
             id: billingId,
             billed: billedCheckbox.checked,
             reportComplete: reportCompleteCheckbox.checked
@@ -307,7 +307,7 @@ function saveLedgerEntry(finalize) {
 
         fetch("./billing", {
             method: "PUT",
-            body: JSON.stringify(billingDto),
+            body: JSON.stringify(billing),
             headers: {'Content-type': 'application/json'}
             })
         .then(response => response.json())
@@ -370,10 +370,10 @@ function saveLedgerEntry(finalize) {
                 newEntryOption.selected = true;
                 entryDropdown.appendChild(newEntryOption);
                 showEntryDetailInputs(false);
-                var newBillingDto = getNewBillingDto();
-                if (newLedgerEntryId && newBillingDto) {
+                var newBilling = getNewBilling();
+                if (newLedgerEntryId && newBilling) {
                     console.log("New Ledger Entry Created: " + newLedgerEntryId);
-                    createAndPopulateNewBilling(newBillingDto, newLedgerEntryId, finalize);
+                    createAndPopulateNewBilling(newBilling, newLedgerEntryId, finalize);
                 } else {
                     if (finalize) {
                         finalizeLedgerEntry()
@@ -384,9 +384,9 @@ function saveLedgerEntry(finalize) {
         });
     } else {
         // Ledger Entry exists already, but need to collect changes to other billings
-        var newBillingDto = getNewBillingDto();
-        if (newBillingDto != null) {
-            createAndPopulateNewBilling(newBillingDto, ledgerEntryId, finalize);
+        var newBilling = getNewBilling();
+        if (newBilling != null) {
+            createAndPopulateNewBilling(newBilling, ledgerEntryId, finalize);
         } else {
             if (finalize) {
                 finalizeLedgerEntry()
@@ -451,7 +451,7 @@ function finalizeLedgerEntry() {
 
 
 // HELPER FUNCTIONS
-function getNewBillingDto() {
+function getNewBilling() {
     var ledgerEntryId = document.getElementById("entryNames").value;
 
     var previousBillingsExist = document.getElementById("billings").hasChildNodes();
