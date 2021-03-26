@@ -628,7 +628,6 @@ function resetEntryDetailsWithCurrentEntry(ledgerEntryId) {
     })
     .then(response => response.json())
     .then(ledgerEntryDetailsDto => {
-        console.log(ledgerEntryDetailsDto.ledgerEntry)
         document.getElementById("initials").value = ledgerEntryDetailsDto.ledgerEntry.initials;
         document.getElementById("age").value = ledgerEntryDetailsDto.ledgerEntry.age;
         document.getElementById("startDate").value = ledgerEntryDetailsDto.ledgerEntry.startDate;
