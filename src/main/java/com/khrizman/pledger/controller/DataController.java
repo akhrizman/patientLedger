@@ -9,6 +9,7 @@ import com.khrizman.pledger.service.DataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -53,10 +54,10 @@ public class DataController {
     @ResponseBody
     public LedgerEntryDetailsDto getBillingOptions() { return dataService.getBillingOptions(); }
 
-    @GetMapping("/billingEntries")
+    @GetMapping("/billings")
     @ResponseBody
-    public List<BillingEntryDto> getAllBillings() {
-        return dataService.getAllBillings();
+    public List<BillingEntryDto> getAllBillings(@RequestParam(required = false) Date startDate, @RequestParam(required=false) Date endDate) {
+        return dataService.getAllBillings(startDate, endDate);
     }
 
     @GetMapping("/billings/{ledgerEntryId}")

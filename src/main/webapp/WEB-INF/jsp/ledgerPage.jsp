@@ -13,13 +13,22 @@
     <title>Ledger</title>
     <link href="./css/ledgerPage.css" rel="stylesheet" type="text/css">
 </head>
-<body onload="populateLedger();">
+<body onload="setDefaultDates(),populateLedger();">
 
   <br>
   <div class="container" >
 
   <div>
     <button id="btnBack" class="btn btn-primary" onclick="window.location.href='./';">BACK</button><br>
+  </div><br>
+
+  <div class="dateInput">
+    <label class="fieldLabels" for="serviceDateFrom">FROM:</label>
+    <input type="date" class="fieldInputs" id="serviceDateFrom" name="serviceDateFrom" onchange="populateLedger()">
+  </div>
+  <div class="dateInput">
+    <label class="fieldLabels" for="serviceDateTo">TO:</label>
+    <input type="date" class="fieldInputs" id="serviceDateTo" name="serviceDateTo" onchange="populateLedger()"><br>
   </div>
 
   <h2></h2>
@@ -35,8 +44,6 @@
           <th></th>
         </tr>
       </thead>
-      <tbody>
-      </tbody>
     </table>
   </div>
 
@@ -45,13 +52,22 @@
 
 <script>
 function populateLedger() {
-    fetch('./billingEntries', {
+    $('#ledgerTable tbody').empty();
+    var startDateString = document.getElementById("serviceDateFrom").value;
+    var endDateString = document.getElementById("serviceDateTo").value;
+    //if (startDateString == '') { startDateString = null; }
+    //if (endDateString == '') { endDateString = null; }
+    fetch('./billings?' + new URLSearchParams({
+            startDate: (startDateString == '') ? getDateForSubmission('2000-01-01') : getDateForSubmission(startDateString),
+            endDate: (endDateString == '') ? getDateForSubmission('2099-01-01') : getDateForSubmission(endDateString)
+        }), {
         method: 'GET',
         headers: {'Content-type': 'application/json'}
     })
     .then(response => response.json())
     .then(billings => {
         var ledgerTable = document.getElementById("ledgerTable");
+        var tableBody = document.createElement("tbody")
         for (i in billings) {
             let billingRow = document.createElement("tr");
             billingRow.id = billings[i].billingId;
@@ -103,8 +119,9 @@ function populateLedger() {
                     "</button>";
             billingRow.appendChild(trashButtonCell);
 
-            ledgerTable.appendChild(billingRow);
+            tableBody.appendChild(billingRow);
         }
+        ledgerTable.appendChild(tableBody);
     });
 }
 function deleteBilling(button) {
@@ -140,5 +157,41 @@ function saveBilling(button) {
     document.getElementById("btnSaveBilling").style.display = "none";
     // fetch the update
     // reload the page
+}
+function getDateForSubmission(dateString) {
+    var rawDate =new Date(dateString);
+    var offsetHours = rawDate.getTimezoneOffset()/60;
+    rawDate.setHours(rawDate.getHours()+offsetHours);
+    var dateToPost = new Date();
+    dateToPost.setFullYear(rawDate.getFullYear());
+    dateToPost.setMonth(rawDate.getMonth());
+    dateToPost.setDate(rawDate.getDate());
+    return dateToPost;
+}
+function setDefaultDates() {
+    document.getElementById("serviceDateFrom").value = getFirstDayOfPreviousMonth();
+    document.getElementById("serviceDateTo").value = getLastDayOfCurrentMonth();
+}
+function getFirstDayOfCurrentMonth() {
+    var date = new Date();
+    var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    var day = ("0" + firstDay.getDate()).slice(-2);
+    var month = ("0" + (firstDay.getMonth() + 1)).slice(-2);
+    return firstDay.getFullYear()+"-"+(month)+"-"+(day);
+}
+function getLastDayOfCurrentMonth() {
+    var date = new Date();
+    var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    var day = ("0" + lastDay.getDate()).slice(-2);
+    var month = ("0" + (lastDay.getMonth() + 1)).slice(-2);
+    return lastDay.getFullYear()+"-"+(month)+"-"+(day);
+}
+function getFirstDayOfPreviousMonth() {
+    var date = new Date();
+    date.setDate(0);
+    var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    var day = ("0" + firstDay.getDate()).slice(-2);
+    var month = ("0" + (firstDay.getMonth() + 1)).slice(-2);
+    return firstDay.getFullYear()+"-"+(month)+"-"+(day);
 }
 </script>

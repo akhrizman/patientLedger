@@ -42,3 +42,21 @@
 .glyphicon {
   font-size: 15px;
 }
+
+.fieldLabels {
+  font-size: 2rem;
+  text-align: right;
+  margin-right: 5px;
+}
+
+.fieldInputs {
+  font-size: 2rem;
+  margin-right: 10px;
+}
+
+.dateInput {
+  display: inline-block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+

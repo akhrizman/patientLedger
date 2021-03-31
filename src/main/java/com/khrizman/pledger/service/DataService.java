@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -50,10 +47,13 @@ public class DataService {
         return new LedgerEntryDetailsDto(ledgerEntryRepository.findById(id));
     }
 
-    public List<BillingEntryDto> getAllBillings() {
+    public List<BillingEntryDto> getAllBillings(Date startDate, Date endDate) {
+        startDate = (startDate == null) ? new GregorianCalendar(2000, Calendar.JANUARY, 1).getTime() : startDate;
+        endDate = (endDate == null) ? new GregorianCalendar(2030, Calendar.JANUARY, 11).getTime() : endDate;
+
         List<LedgerEntry> ledgerEntries = ledgerEntryRepository.findAll();
         Map<Long, LedgerEntry> ledgerEntryMap = ledgerEntries.stream().collect(Collectors.toMap(LedgerEntry::getId, le -> le));
-        List<Billing> billings = billingRepository.findAll();
+        List<Billing> billings = billingRepository.findByServiceDateBetween(startDate, endDate);
         return billings.stream().map(be -> BillingEntryDto.builder()
                 .serviceDate(be.getServiceDate())
                 .billingId(be.getId())
