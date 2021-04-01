@@ -5,12 +5,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Ledger</title>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <title>Ledger</title>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css">
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
+
     <link href="./css/ledgerPage.css" rel="stylesheet" type="text/css">
 </head>
 <body onload="setDefaultDates(),populateLedger();">
@@ -32,16 +41,16 @@
   </div>
 
   <h2></h2>
-    <table class="table" id="ledgerTable">
+    <table class="table table-striped table-hover table-sm table-bordered table-responsive" id="ledgerTable">
       <thead>
         <tr>
-          <th>Service Date</th>
-          <th>Patient</th>
-          <th>Billed</th>
-          <th>Reported</th>
-          <th>Category</th>
-          <th>Type</th>
-          <th></th>
+          <th scope="col">Service Date</th>
+          <th scope="col">Patient</th>
+          <th scope="col">Billed</th>
+          <th scope="col">Reported</th>
+          <th scope="col">Category</th>
+          <th scope="col">Type</th>
+          <th scope="col"></th>
         </tr>
       </thead>
     </table>
@@ -57,10 +66,16 @@ function populateLedger() {
     var endDateString = document.getElementById("serviceDateTo").value;
     //if (startDateString == '') { startDateString = null; }
     //if (endDateString == '') { endDateString = null; }
-    fetch('./billings?' + new URLSearchParams({
-            startDate: (startDateString == '') ? getDateForSubmission('2000-01-01') : getDateForSubmission(startDateString),
-            endDate: (endDateString == '') ? getDateForSubmission('2099-01-01') : getDateForSubmission(endDateString)
-        }), {
+
+    var params = new Object();
+    if (startDateString != '') {
+        params.startDate = getDateForSubmission(startDateString);
+    }
+    if (endDateString != '') {
+        params.endDate = getDateForSubmission(endDateString);
+    }
+
+    fetch('./billings?' + new URLSearchParams(params), {
         method: 'GET',
         headers: {'Content-type': 'application/json'}
     })
@@ -122,6 +137,7 @@ function populateLedger() {
             tableBody.appendChild(billingRow);
         }
         ledgerTable.appendChild(tableBody);
+        $('#ledgerTable').DataTable();
     });
 }
 function deleteBilling(button) {
