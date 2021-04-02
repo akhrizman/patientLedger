@@ -45,7 +45,8 @@
       <thead>
         <tr>
           <th scope="col">Service Date</th>
-          <th scope="col">Patient</th>
+          <th scope="col">Initials</th>
+          <th scope="col">Age</th>
           <th scope="col">Billed</th>
           <th scope="col">Reported</th>
           <th scope="col">Category</th>
@@ -64,8 +65,6 @@ function populateLedger() {
     $('#ledgerTable tbody').empty();
     var startDateString = document.getElementById("serviceDateFrom").value;
     var endDateString = document.getElementById("serviceDateTo").value;
-    //if (startDateString == '') { startDateString = null; }
-    //if (endDateString == '') { endDateString = null; }
 
     var params = new Object();
     if (startDateString != '') {
@@ -91,9 +90,13 @@ function populateLedger() {
             serviceDate.innerHTML = billings[i].serviceDate;
             billingRow.appendChild(serviceDate);
 
-            let patient = document.createElement("td");
-            patient.innerHTML = billings[i].initials + "-" + billings[i].age;
-            billingRow.appendChild(patient);
+            let initials = document.createElement("td");
+            initials.innerHTML = billings[i].initials;
+            billingRow.appendChild(initials);
+
+            let age = document.createElement("td");
+            age.innerHTML = billings[i].age;
+            billingRow.appendChild(age);
 
             let billed = document.createElement("td");
             if (billings[i].billed) {
@@ -137,7 +140,14 @@ function populateLedger() {
             tableBody.appendChild(billingRow);
         }
         ledgerTable.appendChild(tableBody);
-        $('#ledgerTable').DataTable();
+        $('#ledgerTable').DataTable({
+            'columnDefs': [ {
+               'targets': [7], /* table column index */
+               'orderable': false
+            }],
+            "aLengthMenu": [[10, 50, -1], [10, 50, "All"]],
+            "pageLength": 10
+        });
     });
 }
 function deleteBilling(button) {

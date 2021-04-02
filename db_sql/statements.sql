@@ -34,4 +34,4 @@ SELECT b.service_date, c.name AS category, bt.name AS billing_type, le.initials,
 INNER JOIN ledger_entry le ON le.id = b.ledger_entry_id
 INNER JOIN category c ON c.id = b.category_id
 INNER JOIN billing_type bt ON bt.id = b.billing_type_id
-ORDER BY b.id ASC
+ORDER BY b.id AS
