@@ -35,7 +35,6 @@ dependencies {
 
 
 	providedRuntime 'mysql:mysql-connector-java' // Local Tomcat Server
-	//providedRuntime 'mysql:mysql-connector-java:8.0.21'
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat' // Local Tomcat Server
 //	implementation 'mysql:mysql-connector-java' // AWS
 //	implementation 'org.springframework.boot:spring-boot-starter-tomcat' // AWS
