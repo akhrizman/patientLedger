@@ -30,8 +30,10 @@ public class Billing implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date serviceDate;
 
+    @Column(insertable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
+    @Column(insertable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedDate;
 

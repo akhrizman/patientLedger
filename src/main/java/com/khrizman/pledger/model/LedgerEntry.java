@@ -27,8 +27,11 @@ public class LedgerEntry implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date startDate;
 
+    @Column(insertable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
+
+    @Column(insertable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedDate;
 
