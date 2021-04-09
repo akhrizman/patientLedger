@@ -43,3 +43,10 @@
   margin-bottom: 10px;
 }
 
+.dataTables_filter, .dataTables_paginate {
+  float: right;
+}
+
+.dataTables_info, .dataTables_length {
+  display: inline-block;
+}

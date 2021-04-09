@@ -44,14 +44,14 @@
     <table class="table table-striped table-hover table-sm table-bordered table-responsive" id="ledgerTable">
       <thead>
         <tr>
-          <th scope="col">Service Date</th>
+          <th scope="col">Service&nbsp;Date</th>
           <th scope="col">Initials</th>
           <th scope="col">Age</th>
           <th scope="col">Billed</th>
           <th scope="col">Reported</th>
           <th scope="col">Category</th>
           <th scope="col">Type</th>
-          <th scope="col"></th>
+          <th scope="col">Edit&nbsp;Billings&nbsp;&nbsp;</th>
         </tr>
       </thead>
       <tbody id="billings">
@@ -64,7 +64,9 @@
 
 <script>
 function populateLedger() {
-    $('#ledgerTable').dataTable().fnDestroy();
+    if ($('#ledgerTable').dataTable() != null) {
+        $('#ledgerTable').dataTable().fnDestroy();
+    }
     var billingRows = document.getElementById("billings");
     billingRows.innerHTML = '';
 
@@ -85,7 +87,6 @@ function populateLedger() {
     })
     .then(response => response.json())
     .then(billings => {
-        console.log("Requested new result set");
         var ledgerTable = document.getElementById("ledgerTable");
 
         for (i in billings) {
@@ -152,7 +153,8 @@ function populateLedger() {
                'orderable': false
         }],
             'aLengthMenu': [[10, 50, -1], [10, 50, "All"]],
-            'pageLength': 10
+            'pageLength': 10,
+            'dom': 'iftlp'
         });
     });
 }
