@@ -54,6 +54,8 @@
           <th scope="col"></th>
         </tr>
       </thead>
+      <tbody id="billings">
+      </tbody>
     </table>
   </div>
 
@@ -62,7 +64,10 @@
 
 <script>
 function populateLedger() {
-    $('#ledgerTable tbody').empty();
+    $('#ledgerTable').dataTable().fnDestroy();
+    var billingRows = document.getElementById("billings");
+    billingRows.innerHTML = '';
+
     var startDateString = document.getElementById("serviceDateFrom").value;
     var endDateString = document.getElementById("serviceDateTo").value;
 
@@ -80,8 +85,9 @@ function populateLedger() {
     })
     .then(response => response.json())
     .then(billings => {
+        console.log("Requested new result set");
         var ledgerTable = document.getElementById("ledgerTable");
-        var tableBody = document.createElement("tbody")
+
         for (i in billings) {
             let billingRow = document.createElement("tr");
             billingRow.id = billings[i].billingId;
@@ -137,16 +143,16 @@ function populateLedger() {
                     "</button>";
             billingRow.appendChild(trashButtonCell);
 
-            tableBody.appendChild(billingRow);
+            billingRows.appendChild(billingRow);
         }
-        ledgerTable.appendChild(tableBody);
-        $('#ledgerTable').DataTable({
+
+        $('#ledgerTable').DataTable( {
             'columnDefs': [ {
                'targets': [7], /* table column index */
                'orderable': false
-            }],
-            "aLengthMenu": [[10, 50, -1], [10, 50, "All"]],
-            "pageLength": 10
+        }],
+            'aLengthMenu': [[10, 50, -1], [10, 50, "All"]],
+            'pageLength': 10
         });
     });
 }
