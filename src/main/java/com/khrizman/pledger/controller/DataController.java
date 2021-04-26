@@ -91,4 +91,10 @@ public class DataController {
     public void deleteBilling(@PathVariable long id) {
         dataService.deleteBilling(id);
     }
+
+    @GetMapping("/unreportedBillings")
+    @ResponseBody
+    public Integer getUnreportedBillingsCount() {
+        return dataService.getUnreportedBillingsCount();
+    }
 }

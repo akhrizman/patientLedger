@@ -14,7 +14,7 @@
     <link href="./css/entryPage.css" rel="stylesheet" type="text/css">
     <link rel="shortcut icon" type="image/png" href="./img/ledger.png">
 </head>
-<body onload="populateEntrySelection(),createNewBillingForm();">
+<body onload="populateEntrySelection(),createNewBillingForm(),setWarningColor();">
 
   <br>
   <div class="container" >
@@ -82,6 +82,27 @@
 </html>
 
 <script>
+function setWarningColor() {
+    fetch('./unreportedBillings', {
+        method: 'GET',
+        headers: {'Content-type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(unreportedBillings => {
+        var entrySelectionContainer = document.getElementById("entryDetails");
+        if (unreportedBillings > 15) {
+            entrySelectionContainer.style.backgroundColor = "red";
+        } else if (unreportedBillings > 10) {
+            entrySelectionContainer.style.backgroundColor = "orange";
+        } else if (unreportedBillings > 5) {
+            entrySelectionContainer.style.backgroundColor = "yellow";
+        } else if (unreportedBillings > 0) {
+            entrySelectionContainer.style.backgroundColor = "green"; // darkseagreen
+        } else if (unreportedBillings == 0) {
+            entrySelectionContainer.style.backgroundColor = "lightblue";
+        }
+    })
+}
 function populateEntrySelection() {
     document.getElementById("startDate").value = getTodaysDate();
     setNewServiceDateToToday();
@@ -276,6 +297,7 @@ function createAndPopulateNewBilling(newBilling, ledgerEntryId, finalize) {
                 console.log(ledgerEntryDetailsDto.billings);
                 populateExistingBillings(ledgerEntryDetailsDto);
                 resetNewBillingForm();
+                setWarningColor();
             });
         }
         if (finalize) {
@@ -320,6 +342,7 @@ function saveLedgerEntry(finalize) {
             if (billing.reportComplete) {
                 reportCompleteCheckbox.disabled = true;
             }
+            setWarningColor();
         });
     }
 

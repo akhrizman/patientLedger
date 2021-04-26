@@ -16,4 +16,6 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
     Integer countByLedgerEntryId(long id);
 
     List<Billing> findByServiceDateBetween(Date startDate, Date endDate);
+
+    Integer countByReportComplete(boolean status);
 }

@@ -176,4 +176,8 @@ public class DataService {
     public void deleteBilling(long id) {
         billingRepository.deleteById(id);
     }
+
+    public Integer getUnreportedBillingsCount() {
+        return billingRepository.countByReportComplete(false);
+    }
 }

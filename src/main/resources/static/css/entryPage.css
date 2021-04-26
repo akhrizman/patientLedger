@@ -13,7 +13,6 @@ ul {
 #entrySelectionContainer,#entryDetails {
   width: 100% !important;
   font-size: 2rem !important;
-  background-color: darkseagreen;
 }
 
 #newBilling,#newBillingDynamic,#newBillingStaticInput {
