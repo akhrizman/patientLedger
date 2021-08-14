@@ -328,7 +328,7 @@ function saveLedgerEntry(finalize) {
             reportComplete: reportCompleteCheckbox.checked
         };
 
-        fetch("./billing", {
+        fetch("./billingFlags", {
             method: "PUT",
             body: JSON.stringify(billing),
             headers: {'Content-type': 'application/json'}

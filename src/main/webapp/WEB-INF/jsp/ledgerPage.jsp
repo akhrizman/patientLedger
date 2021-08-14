@@ -30,40 +30,66 @@
   <br>
   <div class="container" >
 
-  <div>
-    <button id="btnBack" class="btn btn-primary" onclick="window.location.href='./';">BACK</button><br>
-  </div><br>
+    <div>
+      <button id="btnBack" class="btn btn-primary" onclick="window.location.href='./';">BACK</button><br>
+    </div><br>
 
-  <div class="dateInput">
-    <label class="fieldLabels" for="serviceDateFrom">FROM:</label>
-    <input type="date" class="fieldInputs" id="serviceDateFrom" name="serviceDateFrom" onchange="populateLedger()">
-  </div>
-  <div class="dateInput">
-    <label class="fieldLabels" for="serviceDateTo">TO:</label>
-    <input type="date" class="fieldInputs" id="serviceDateTo" name="serviceDateTo" onchange="populateLedger()"><br>
+    <div class="dateInput">
+      <label class="fieldLabels" for="serviceDateFrom">FROM:</label>
+      <input type="date" class="fieldInputs" id="serviceDateFrom" name="serviceDateFrom" onchange="populateLedger()">
+    </div>
+    <div class="dateInput">
+      <label class="fieldLabels" for="serviceDateTo">TO:</label>
+      <input type="date" class="fieldInputs" id="serviceDateTo" name="serviceDateTo" onchange="populateLedger()"><br>
+    </div>
+
+    <h2></h2>
+      <table class="table table-striped table-hover table-sm table-bordered table-responsive" id="ledgerTable">
+        <thead>
+          <tr>
+            <th scope="col">Service&nbsp;Date</th>
+            <th scope="col">Initials</th>
+            <th scope="col">Age</th>
+            <th scope="col">Billed</th>
+            <th scope="col">Reported</th>
+            <th scope="col">Category</th>
+            <th scope="col">Type</th>
+            <th scope="col">Edit&nbsp;Billings&nbsp;&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody id="billings">
+        </tbody>
+      </table>
   </div>
 
-  <h2></h2>
-    <table class="table table-striped table-hover table-sm table-bordered table-responsive" id="ledgerTable">
-      <thead>
-        <tr>
-          <th scope="col">Service&nbsp;Date</th>
-          <th scope="col">Initials</th>
-          <th scope="col">Age</th>
-          <th scope="col">Billed</th>
-          <th scope="col">Reported</th>
-          <th scope="col">Category</th>
-          <th scope="col">Type</th>
-          <th scope="col">Edit&nbsp;Billings&nbsp;&nbsp;</th>
-        </tr>
-      </thead>
-      <tbody id="billings">
-      </tbody>
-    </table>
+  <div class="billingUpdatePopup">
+    <div class="formPopup" id="popupForm">
+      <form action="" class="formContainer" id="billingUpdateForm">
+        <h2>Update Billing</h2>
+
+        <input id="formBillingId" name="formBillingId" type="hidden">
+
+        <select name="category" id="category"></select><br><br>
+        <select name="billingType" id="billingType"></select><br><br>
+
+        <label class="fieldLabels" for="serviceDate">Bill Date</label>
+        <input type="date" class="fieldInputs" id="serviceDate" name="serviceDate"><br><br>
+
+        <input type="checkbox" id="billedCheckbox" name="billedCheckbox">
+        <label for="billedCheckbox">Billed&nbsp;&nbsp;&nbsp;</label>
+
+        <input type="checkbox" id="reportCompleteCheckbox" name="reportCompleteCheckbox">
+        <label for="reportCompleteCheckbox">Reported</label>
+
+        <button type="submit" class="btn" onclick="updateBilling()">Update Billing</button>
+        <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+      </form>
+    </div>
   </div>
 
 </body>
 </html>
+
 
 <script>
 function populateLedger() {
@@ -134,18 +160,15 @@ function populateLedger() {
             billingType.innerHTML = billings[i].billingType;
             billingRow.appendChild(billingType);
 
-            let trashButtonCell = document.createElement("td");
-            trashButtonCell.innerHTML =
-            "<button type='button' onclick='enableBillingEditing(this);' class='btn btn-default btn-sm' id='btnEnableBillingEditing'>" +
+            let billingUpdateCell = document.createElement("td");
+            billingUpdateCell.innerHTML =
+            "<button type='button' onclick='openBillingEditPopup(this);' class='btn btn-default btn-sm' id='btnOpenBillingEditPopup'>" +
                     "<span class='glyphicon glyphicon-pencil' />" +
-                    "</button>&nbsp;" +
-            "<button type='button' onclick='saveBilling(this);' class='btn btn-default btn-sm' id='btnSaveBilling'>" +
-                    "<span class='glyphicon glyphicon-save' />" +
                     "</button>&nbsp;" +
             "<button type='button' onclick='deleteBilling(this);' class='btn btn-default btn-sm'>" +
                     "<span class='glyphicon glyphicon-trash' />" +
                     "</button>";
-            billingRow.appendChild(trashButtonCell);
+            billingRow.appendChild(billingUpdateCell);
 
             billingRows.appendChild(billingRow);
         }
@@ -183,17 +206,97 @@ function deleteBilling(button) {
         }
     });
 }
-function enableBillingEditing(button) {
-    document.getElementById("btnEnableBillingEditing").style.display = "none";
-    document.getElementById("btnSaveBilling").style.display = "inline-block";
-    // change cell text to date picker input and default with the original values.
-    // change cell billed & reported to check boxes
+function openBillingEditPopup(button) {
+    var billingId = $(button).parents("tr").attr('id');
+    document.getElementById("popupForm").style.display = "block";
+    formBillingId = document.getElementById("formBillingId");
+    formBillingId.value = billingId;
+
+    fetch('./billing/'+billingId, {
+        method: 'GET',
+        headers: {'Content-type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(ledgerEntryDetailsDto => {
+        console.log(ledgerEntryDetailsDto);
+        var billing = ledgerEntryDetailsDto.billings[0];
+        var categoryMap = ledgerEntryDetailsDto.categoryMap;
+        var billingTypeMap = ledgerEntryDetailsDto.billingTypeMap;
+
+        var categoryDropdown = document.getElementById("category");
+        var billingTypeDropdown = document.getElementById("billingType");
+
+        if (!categoryDropdown.hasChildNodes() && !billingTypeDropdown.hasChildNodes()) {
+            for (var categoryId in categoryMap) {
+                var categoryOption = document.createElement("option");
+                categoryOption.value = categoryId;
+                categoryOption.innerHTML = categoryMap[categoryId];
+                if (billing.categoryId == categoryId) {
+                    console.log("categoryOption.selected: " + categoryOption.selected);
+                    categoryOption.selected = true;
+                    console.log("categoryOption.selected: " + categoryOption.selected);
+                }
+                categoryDropdown.appendChild(categoryOption);
+            }
+
+            for (var billingTypeId in billingTypeMap) {
+                var billingTypeOption = document.createElement("option");
+                billingTypeOption.value = billingTypeId;
+                billingTypeOption.innerHTML = billingTypeMap[billingTypeId];
+                if (billing.billingTypeId == billingTypeId) {
+                    console.log("billingTypeOption.selected: " + billingTypeOption.selected);
+                    billingTypeOption.selected = true;
+                    console.log("billingTypeOption.selected: " + billingTypeOption.selected);
+                }
+                billingTypeDropdown.appendChild(billingTypeOption);
+            }
+        }
+
+        categoryField = document.getElementById("category");
+        typeField = document.getElementById("billingType");
+        serviceDateField = document.getElementById("serviceDate");
+        billedCheckbox = document.getElementById("billedCheckbox");
+        reportCompleteCheckbox = document.getElementById("reportCompleteCheckbox");
+
+        categoryField.value = ledgerEntryDetailsDto.categoryMap[billing.categoryId];
+        typeField.value = ledgerEntryDetailsDto.billingTypeMap[billing.billingTypeId];
+        serviceDateField.value = billing.serviceDate;
+        billedCheckbox.checked = billing.billed;
+        reportCompleteCheckbox.checked = billing.reportComplete;
+    });
+
 }
-function saveBilling(button) {
-    document.getElementById("btnEnableBillingEditing").style.display = "inline-block";
-    document.getElementById("btnSaveBilling").style.display = "none";
-    // fetch the update
-    // reload the page
+function updateBilling() {
+    categoryField = document.getElementById("category");
+    typeField = document.getElementById("billingType");
+    serviceDateField = document.getElementById("serviceDate");
+    billedCheckbox = document.getElementById("billedCheckbox");
+    reportCompleteCheckbox = document.getElementById("reportCompleteCheckbox");
+    billingId = document.getElementById("formBillingId").value;
+
+    var billing = {
+        id: billingId,
+        categoryId: 1, // set this to the value of the dropdown selection
+        billingTypeId: 1, // set this to the value of the dropdown selection
+        serviceDate: getDateForSubmission(serviceDateField.value),
+        billed: billedCheckbox.checked,
+        reportComplete: reportCompleteCheckbox.checked
+    };
+    console.log("billing: " + billing);
+
+    fetch("./billing", {
+        method: "PUT",
+        body: JSON.stringify(billing),
+        headers: {'Content-type': 'application/json'}
+        })
+    .then(response => response.json())
+    .then(billing => {
+        console.log("billing: " + JSON.stringify(billing));
+    });
+    //window.location.reload(true);
+}
+function closeForm() {
+  document.getElementById("popupForm").style.display = "none";
 }
 function getDateForSubmission(dateString) {
     var rawDate =new Date(dateString);

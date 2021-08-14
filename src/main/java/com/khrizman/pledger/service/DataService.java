@@ -138,10 +138,21 @@ public class DataService {
     }
 
     @Transactional
+    public Billing updateBillingFlags(Billing billing) {
+        Billing billingToUpdate = billingRepository.findById(billing.getId());
+        billingToUpdate.setBilled(billing.isBilled());
+        billingToUpdate.setReportComplete(billing.isReportComplete());
+        return billingRepository.save(billingToUpdate);
+    }
+
+    @Transactional
     public Billing updateBilling(Billing billing) {
         Billing billingToUpdate = billingRepository.findById(billing.getId());
         billingToUpdate.setBilled(billing.isBilled());
         billingToUpdate.setReportComplete(billing.isReportComplete());
+        billingToUpdate.setServiceDate(billing.getServiceDate());
+        billingToUpdate.setCategoryId(billing.getCategoryId());
+        billingToUpdate.setBillingTypeId(billing.getBillingTypeId());
         return billingRepository.save(billingToUpdate);
     }
 

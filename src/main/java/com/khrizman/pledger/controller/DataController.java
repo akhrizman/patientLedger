@@ -81,9 +81,17 @@ public class DataController {
         return ledgerEntryDetailsDto;
     }
 
+    @PutMapping("/billingFlags")
+    @ResponseBody
+    public Billing updateBillingFlags(@RequestBody Billing billing) {
+        log.info("Updating billing Flags " + billing.getId());
+        return dataService.updateBillingFlags(billing);
+    }
+
     @PutMapping("/billing")
     @ResponseBody
     public Billing updateBilling(@RequestBody Billing billing) {
+        log.info("Updating billing " + billing.getId());
         return dataService.updateBilling(billing);
     }
 
