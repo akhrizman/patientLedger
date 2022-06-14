@@ -1,0 +1,3 @@
+# patientLedger
+
+This was a small app I designed for a physician who needed a simple solution to keep track of their billings and charts. It was coded in such a way that it would not save any identiying patient information, while allowing the user to quickly record a patient visit by inputting a patient's initials, age, date, and general category of visit (in-patient, out-patient, or testing).  The user could then view all their visits and mark them as billed or completed.  It was used for about a year and a half, and was decomissioned once the physician's office switched to usingelectronic medical records.
